@@ -352,6 +352,18 @@ public class Properties {
 	@Parameter(key = "algorithm", group = "Search Algorithm", description = "Search algorithm")
 	public static Algorithm ALGORITHM = Algorithm.MONOTONIC_GA;
 
+	@Parameter(key = "fuzzer", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
+	public static boolean FUZZER = false;
+
+	@Parameter(key = "fuzzer_seed", group = "Search Algorithm", description = "Fuzzer seed")
+	public static String FUZZER_SEED = "";
+
+	@Parameter(key = "fuzzer_probability", group = "Search Algorithm", description = "Fuzzer probability")
+	public static double FUZZER_PROBABILITY = 0.5;
+
+	@Parameter(key = "fuzzer_max_mutation_rounds", group = "Search Algorithm", description = "Fuzzer mutation rounds")
+	public static int FUZZER_MAX_MUTATION_ROUNDS = 10;
+
 	/** Different models of neighbourhoods in the Cellular GA **/
 	public enum CGA_Models{
 		ONE_DIMENSION,
