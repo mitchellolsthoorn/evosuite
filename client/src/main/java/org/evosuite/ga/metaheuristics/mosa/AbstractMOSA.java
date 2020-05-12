@@ -28,7 +28,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+
+import com.natpryce.snodge.JsonMutator;
 import org.evosuite.ProgressMonitor;
 import org.evosuite.Properties;
 import org.evosuite.Properties.SelectionFunction;
@@ -142,6 +146,11 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			this.removeUnusedVariables(offspring1);
 			this.removeUnusedVariables(offspring2);
 
+			if (Properties.FUZZER) {
+				evolveInput(offspring1);
+				evolveInput(offspring2);
+			}
+
 			// apply mutation on offspring1
 			this.mutate(offspring1, parent1);
 			if (offspring1.isChanged()) {
@@ -180,6 +189,52 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 		}
 		logger.info("Number of offsprings = {}", offspringPopulation.size());
 		return offspringPopulation;
+	}
+
+	/**
+	 * This method evolves the String primitives in an offspring with a grammar-based fuzzer.
+	 * @param offspring
+	 */
+	private void evolveInput(T offspring) {
+		TestChromosome testChromosome = (TestChromosome) offspring;
+		TestCase testCase = testChromosome.getTestCase();
+
+		// For each test case in the test suite mutate the strings
+		for (Statement statement: testCase) {
+			//logger.error("{}", statement.toString());
+
+			// Only apply the mutation on the String primitives
+			if (statement instanceof StringPrimitiveStatement) {
+				StringPrimitiveStatement stringStatement = (StringPrimitiveStatement) statement;
+
+				// Only apply the mutation with a probability of FUZZER_PROBABILITY
+				Random r = new Random();
+				if (r.nextDouble() <= Properties.FUZZER_PROBABILITY) {
+
+					// Fuzzer seed
+					String mutant = Properties.FUZZER_SEED;
+
+					// Apply JSON mutator
+					JsonMutator mutator = new JsonMutator();
+
+					int rounds = r.nextInt(Properties.FUZZER_MAX_MUTATION_ROUNDS);
+					for (int i = 0; i <= rounds; i++) {
+						Optional<String> strings = mutator.forStrings().mutate(mutant, 1).findFirst();
+						if (strings.isPresent()) {
+							mutant = strings.get();
+						}
+					}
+
+					// Replace input with mutated input
+					stringStatement.setValue(mutant);
+
+					// Manually tell the fitness function that the testcase has been changed. So, new a fitness value has to be computed
+					testChromosome.setChanged(true);
+				}
+				//logger.error("{}", stringStatement.getValue());
+			}
+		}
+		//logger.error("{}", testCase.toCode());
 	}
 
 	/**
@@ -347,6 +402,13 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
 		// Create a random parent population P0
 		this.generateInitialPopulation(Properties.POPULATION);
+
+		// Mutate input
+		if (Properties.FUZZER) {
+			for (T t : this.population) {
+				this.evolveInput(t);
+			}
+		}
 
 		// Determine fitness
 		this.calculateFitness();
