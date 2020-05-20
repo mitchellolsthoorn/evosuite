@@ -59,7 +59,11 @@ public class JsonMutator<T extends Chromosome> {
                             Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
                             if (strings.isPresent()) {
                                 seed = strings.get();
-                                seed.replace("\"x\"", "\"" + dynamicConstantPool.getRandomString() + "\"");
+                                String somethingNew = seed.replace("\"[a-zA-Z0-9].*\"", "\"" + dynamicConstantPool.getRandomString() + "\"");
+
+                                if (somethingNew != null) {
+                                    seed = somethingNew;
+                                }
                             }
                         }
 
