@@ -27,6 +27,7 @@ import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.ga.SecondaryObjective;
 import org.evosuite.ga.localsearch.LocalSearchObjective;
 import org.evosuite.ga.operators.mutation.MutationHistory;
+import org.evosuite.grammar.json.JsonMutator;
 import org.evosuite.runtime.javaee.injection.Injector;
 import org.evosuite.runtime.util.AtMostOnceLogger;
 import org.evosuite.setup.TestCluster;
@@ -335,6 +336,15 @@ public class TestChromosome extends ExecutableChromosome {
 			logger.debug("Mutation: insert");
 			if (mutationInsert())
 				changed = true;
+		}
+
+		// Mutator
+		if (Properties.FUZZER) {
+			JsonMutator jsonMutator = new JsonMutator();
+			jsonMutator.mutate(this);
+
+			// Manually tell the fitness function that the testcase has been changed. So, new a fitness value has to be computed
+			changed = true;
 		}
 
 		if (changed) {

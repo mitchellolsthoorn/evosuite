@@ -356,7 +356,10 @@ public class Properties {
 	public static boolean FUZZER = false;
 
 	@Parameter(key = "fuzzer_seed", group = "Search Algorithm", description = "Fuzzer seed")
-	public static String FUZZER_SEED = "";
+	public static String[] FUZZER_SEED = {
+			"{\"x\": \"hello\", \"y\": 7, \"z\": true, \"a\": [], \"b\": {}}",
+			"{\"fruit\": \"Apple\", \"size\": \"Large\", \"color\": \"Red\", \"value\": true, \"value2\": false, \"number\": \"1\"}"
+	};
 
 	@Parameter(key = "fuzzer_probability", group = "Search Algorithm", description = "Fuzzer probability")
 	public static double FUZZER_PROBABILITY = 0.5;
