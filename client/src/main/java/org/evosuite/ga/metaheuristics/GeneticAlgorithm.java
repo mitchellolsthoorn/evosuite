@@ -53,7 +53,9 @@ import org.evosuite.ga.populationlimit.IndividualPopulationLimit;
 import org.evosuite.ga.populationlimit.PopulationLimit;
 import org.evosuite.ga.stoppingconditions.MaxGenerationStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.grammar.json.JsonMutator;
 import org.evosuite.symbolic.DSEStats;
+import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionTracer;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.ArrayUtil;
@@ -411,6 +413,16 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 	 */
 	protected void generateRandomPopulation(int population_size) {
 	    population.addAll(this.getRandomPopulation(population_size));
+
+	    if (Properties.FUZZER) {
+			JsonMutator jsonMutator = new JsonMutator();
+
+			T chromosome = population.get(0);
+			if (chromosome instanceof TestChromosome) {
+				for (T testChromosome : population)
+					jsonMutator.inject(testChromosome);
+			}
+		}
 	}
 
 	protected List<T> getRandomPopulation(int population_size) {
