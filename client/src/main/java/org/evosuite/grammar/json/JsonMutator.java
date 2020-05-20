@@ -53,22 +53,19 @@ public class JsonMutator<T extends Chromosome> {
 
                     if (this.isValidStupid(stringStatement.getValue())) {
                         seed = stringStatement.getValue();
-                    } else {
-                        int seedIndex = r.nextInt(Properties.FUZZER_SEED.length);
-                        seed = Properties.FUZZER_SEED[seedIndex];
-                    }
 
-                    int rounds = r.nextInt(Properties.FUZZER_MAX_MUTATION_ROUNDS);
-                    for (int i = 0; i <= rounds; i++) {
-                        Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
-                        if (strings.isPresent()) {
-                            seed = strings.get();
-                            seed.replace("\"x\"", "\"" + dynamicConstantPool.getRandomString() + "\"");
+                        int rounds = r.nextInt(Properties.FUZZER_MAX_MUTATION_ROUNDS);
+                        for (int i = 0; i <= rounds; i++) {
+                            Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
+                            if (strings.isPresent()) {
+                                seed = strings.get();
+                                seed.replace("\"x\"", "\"" + dynamicConstantPool.getRandomString() + "\"");
+                            }
                         }
-                    }
 
-                    // Replace input with mutated input
-                    stringStatement.setValue(seed);
+                        // Replace input with mutated input
+                        stringStatement.setValue(seed);
+                    }
                 }
             }
         }
