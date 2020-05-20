@@ -397,19 +397,19 @@ public abstract class GeneticAlgorithm<T extends Chromosome<T>> implements Searc
      *
      * @param population_size a int.
      */
-    protected void generateRandomPopulation(int population_size) {
-        population.addAll(this.getRandomPopulation(population_size));
+	protected void generateRandomPopulation(int population_size) {
+	    population.addAll(this.getRandomPopulation(population_size));
 
-        if (Properties.FUZZER) {
-            JsonMutator jsonMutator = new JsonMutator();
+	    if (Properties.FUZZER) {
+			JsonMutator jsonMutator = new JsonMutator();
 
-            T chromosome = population.get(0);
-            if (chromosome instanceof TestChromosome) {
-                for (T testChromosome : population)
-                    jsonMutator.inject(testChromosome);
-            }
-        }
-    }
+			T chromosome = population.get(0);
+			if (chromosome instanceof TestChromosome) {
+				for (T testChromosome : population)
+					jsonMutator.inject(testChromosome);
+			}
+		}
+	}
 
     protected List<T> getRandomPopulation(int population_size) {
         logger.debug("Creating random population");
