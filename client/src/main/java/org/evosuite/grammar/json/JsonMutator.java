@@ -126,7 +126,14 @@ public class JsonMutator<T extends Chromosome> {
                     // Replace input with mutated input
 
                     int seedIndex = r.nextInt(Properties.FUZZER_SEED.length);
-                    stringStatement.setValue(Properties.FUZZER_SEED[seedIndex]);
+                    String seed = Properties.FUZZER_SEED[seedIndex];
+
+                    Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
+                    if (strings.isPresent()) {
+                        seed = strings.get();
+                    }
+
+                    stringStatement.setValue(seed);
                 }
             }
         }
