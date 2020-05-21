@@ -70,10 +70,10 @@ public class JsonMutator<T extends Chromosome> {
                             }
                         }
 
-                        logger.error("Before = {}", seed);
+                        //logger.error("Before = {}", seed);
                         String somethingNew = replaceString(seed);
 
-                        logger.error("After = " + somethingNew);
+                        //logger.error("After = " + somethingNew);
                         if (somethingNew != null) {
                             seed = somethingNew;
                         }
