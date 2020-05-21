@@ -6,18 +6,25 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.MalformedJsonException;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
+import org.evosuite.seeding.ConstantPool;
+import org.evosuite.seeding.ConstantPoolManager;
 import org.evosuite.seeding.DynamicConstantPool;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testcase.statements.StringPrimitiveStatement;
+import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.google.gson.stream.JsonToken.END_DOCUMENT;
 
@@ -25,18 +32,19 @@ public class JsonMutator<T extends Chromosome> {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonMutator.class);
 
+    private static Random r = new Random();
+
+    private static Pattern stringPattern = Pattern.compile("\"[a-zA-Z0-9]+\"");
+
+    private static com.natpryce.snodge.JsonMutator mutator = new com.natpryce.snodge.JsonMutator();
+
+    private static ConstantPool dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
+
     public void mutate(T chromosome) {
         TestChromosome testChromosome = (TestChromosome) chromosome;
         TestCase testCase = testChromosome.getTestCase();
 
         double count = this.stringPrimitiveCount(testCase);
-
-        DynamicConstantPool dynamicConstantPool = new DynamicConstantPool();
-
-        Random r = new Random();
-
-        // Apply JSON mutator
-        com.natpryce.snodge.JsonMutator mutator = new com.natpryce.snodge.JsonMutator();
 
         // For each test case in the test suite mutate the strings
         for (Statement statement : testCase) {
