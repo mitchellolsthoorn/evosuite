@@ -67,12 +67,15 @@ public class JsonMutator<T extends Chromosome> {
                             Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
                             if (strings.isPresent()) {
                                 seed = strings.get();
-                                String somethingNew = seed.replace("\"[a-zA-Z0-9].*\"", "\"" + dynamicConstantPool.getRandomString() + "\"");
-
-                                if (somethingNew != null) {
-                                    seed = somethingNew;
-                                }
                             }
+                        }
+
+                        logger.error("Before = {}", seed);
+                        String somethingNew = replaceString(seed);
+
+                        logger.error("After = " + somethingNew);
+                        if (somethingNew != null) {
+                            seed = somethingNew;
                         }
 
                         // Replace input with mutated input
@@ -82,6 +85,26 @@ public class JsonMutator<T extends Chromosome> {
             }
         }
     }
+
+    protected String replaceString(String string){
+        //regex matcher
+        Matcher matcher = stringPattern.matcher(string);
+        List<String> matches = new ArrayList<>();
+
+        while(matcher.find()) {
+            matches.add(matcher.group());
+        }
+
+        String new_string = null;
+        if (matches.size()>0){
+            int index = r.nextInt(matches.size());
+            String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
+            new_string = string.replace(matches.get(index), new_item);
+        }
+
+        return new_string;
+    }
+
 
     public void inject(T chromosome) {
         TestChromosome testChromosome = (TestChromosome) chromosome;
