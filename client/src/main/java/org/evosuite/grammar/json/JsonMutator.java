@@ -127,6 +127,7 @@ public class JsonMutator<T extends Chromosome> {
             matches.add(matcher.group());
         }
 
+
         if (matches.size()>0){
             int index = r.nextInt(matches.size());
             String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
