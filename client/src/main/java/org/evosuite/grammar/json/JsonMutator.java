@@ -86,7 +86,39 @@ public class JsonMutator<T extends Chromosome> {
         }
     }
 
+    protected static String generateRandomJson(){
+        double prob = r.nextDouble();
+        String attribute = "\"" + dynamicConstantPool.getRandomString() + "\"";
+        String value;
+
+        if (prob <= 1.0/7.0){
+            value = "\"" +  dynamicConstantPool.getRandomString() + "\"";
+        } else if (prob <= 2.0/7.0) {
+            value = "" + dynamicConstantPool.getRandomDouble();
+        } else if (prob <= 3.0/7.0) {
+            value = "" + dynamicConstantPool.getRandomFloat();
+        } else if (prob <= 4.0/7.0) {
+            value = "" + dynamicConstantPool.getRandomInt();
+        } else if (prob <= 5.0/7.0) {
+            value = "" + dynamicConstantPool.getRandomLong();
+        } else if (prob <= 6.0/7.0) {
+            value = "[" + dynamicConstantPool.getRandomString() +"]";
+        } else {
+            value = "" + r.nextBoolean();
+        }
+
+        return "{" + attribute + ":" + value + "}";
+    }
+
     protected String replaceString(String string){
+        dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        // if the grammar produces a null or an empty string,
+        // we generate random json strings
+        if (string == null || string.equals("") ||
+                string.equals("null"))
+            return generateRandomJson();
+
         //regex matcher
         Matcher matcher = stringPattern.matcher(string);
         List<String> matches = new ArrayList<>();
@@ -95,16 +127,15 @@ public class JsonMutator<T extends Chromosome> {
             matches.add(matcher.group());
         }
 
-        String new_string = null;
         if (matches.size()>0){
             int index = r.nextInt(matches.size());
             String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
-            new_string = string.replace(matches.get(index), new_item);
+            String new_string = string.replace(matches.get(index), new_item);
+            return new_string;
+        } else {
+            return string;
         }
-
-        return new_string;
     }
-
 
     public void inject(T chromosome) {
         TestChromosome testChromosome = (TestChromosome) chromosome;
@@ -187,6 +218,8 @@ public class JsonMutator<T extends Chromosome> {
         } catch (MalformedJsonException e) {
             return false;
         } catch (IOException e) {
+            return false;
+        } catch (Exception e) {
             return false;
         }
     }
