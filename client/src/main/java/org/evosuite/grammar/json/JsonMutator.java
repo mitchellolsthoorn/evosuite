@@ -58,7 +58,7 @@ public class JsonMutator<T extends Chromosome> {
                     if (this.isValidStupid(stringStatement.getValue())) {
                         seed = stringStatement.getValue();
 
-                        int rounds = r.nextInt(Properties.FUZZER_MAX_MUTATION_ROUNDS);
+                        int rounds = Randomness.nextInt(Properties.FUZZER_MAX_MUTATION_ROUNDS);
                         for (int i = 0; i <= rounds; i++) {
                             Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
                             if (strings.isPresent()) {
@@ -139,8 +139,6 @@ public class JsonMutator<T extends Chromosome> {
         TestCase testCase = testChromosome.getTestCase();
 
         double count = this.stringPrimitiveCount(testCase);
-
-        Random r = new Random();
 
         // For each test case in the test suite mutate the strings
         for (Statement statement : testCase) {
