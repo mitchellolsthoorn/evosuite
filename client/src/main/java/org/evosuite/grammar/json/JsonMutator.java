@@ -8,7 +8,6 @@ import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.seeding.ConstantPool;
 import org.evosuite.seeding.ConstantPoolManager;
-import org.evosuite.seeding.DynamicConstantPool;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.Statement;
@@ -22,7 +21,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +29,6 @@ import static com.google.gson.stream.JsonToken.END_DOCUMENT;
 public class JsonMutator<T extends Chromosome> {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonMutator.class);
-
-    private static Random r = new Random();
 
     private static Pattern stringPattern = Pattern.compile("\"[a-zA-Z0-9]+\"");
 
@@ -54,7 +50,7 @@ public class JsonMutator<T extends Chromosome> {
                 StringPrimitiveStatement stringStatement = (StringPrimitiveStatement) statement;
 
                 // Only apply the mutation with a probability of FUZZER_PROBABILITY
-                if (r.nextDouble() <= 1.0 / count) {
+                if (Randomness.nextDouble() <= 1.0 / count) {
 
                     // Fuzzer seed
                     String seed;
@@ -87,7 +83,7 @@ public class JsonMutator<T extends Chromosome> {
     }
 
     protected static String generateRandomJson(){
-        double prob = r.nextDouble();
+        double prob = Randomness.nextDouble();
         String attribute = "\"" + dynamicConstantPool.getRandomString() + "\"";
         String value;
 
@@ -104,7 +100,7 @@ public class JsonMutator<T extends Chromosome> {
         } else if (prob <= 6.0/7.0) {
             value = "[" + dynamicConstantPool.getRandomString() +"]";
         } else {
-            value = "" + r.nextBoolean();
+            value = "" + Randomness.nextBoolean();
         }
 
         return "{" + attribute + ":" + value + "}";
@@ -129,7 +125,7 @@ public class JsonMutator<T extends Chromosome> {
 
 
         if (matches.size()>0){
-            int index = r.nextInt(matches.size());
+            int index = Randomness.nextInt(matches.size());
             String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
             String new_string = string.replace(matches.get(index), new_item);
             return new_string;
@@ -154,10 +150,10 @@ public class JsonMutator<T extends Chromosome> {
                 StringPrimitiveStatement stringStatement = (StringPrimitiveStatement) statement;
 
                 // Only apply the mutation with a probability of FUZZER_PROBABILITY
-                if (r.nextDouble() <= 1.0 / count) {
+                if (Randomness.nextDouble() <= 1.0 / count) {
                     // Replace input with mutated input
 
-                    int seedIndex = r.nextInt(Properties.FUZZER_SEED.length);
+                    int seedIndex = Randomness.nextInt(Properties.FUZZER_SEED.length);
                     String seed = Properties.FUZZER_SEED[seedIndex];
 
                     Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
