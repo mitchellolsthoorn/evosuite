@@ -6,12 +6,14 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.MalformedJsonException;
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
+import org.evosuite.runtime.Random;
 import org.evosuite.seeding.ConstantPool;
 import org.evosuite.seeding.ConstantPoolManager;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testcase.statements.StringPrimitiveStatement;
+import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ public class JsonMutator<T extends Chromosome> {
     private static ConstantPool dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
 
     public void mutate(T chromosome) {
+        dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
         TestChromosome testChromosome = (TestChromosome) chromosome;
         TestCase testCase = testChromosome.getTestCase();
 
@@ -84,31 +87,58 @@ public class JsonMutator<T extends Chromosome> {
 
     protected static String generateRandomJson(){
         double prob = Randomness.nextDouble();
-        String attribute = "\"" + dynamicConstantPool.getRandomString() + "\"";
+        String json = "{";
+        int max_entries = 1 + Randomness.nextInt(10);
+        for (int i=0; i <= max_entries; i++){
+            json = json + getRandomString() + " : ";
+            if (prob <= 6.0/7.0){
+                json = json + generateRandomJsonValue();
+            } else {
+                json = json + "[" + generateRandomJsonValue() + "]";
+            }
+            if (i < max_entries)
+                json = json + ", ";
+        }
+        json = json + "}";
+        LoggingUtils.getEvoLogger().error("{}",json);
+        return json;
+    }
+
+    protected static String getRandomString(){
+        String attribute = dynamicConstantPool.getRandomString();
+        if (attribute.equals("")) {
+            attribute = Randomness.nextString(Randomness.nextInt(10));
+        }
+
+
+        attribute = attribute.replaceAll("\"","");
+        attribute = attribute.replaceAll("\'","");
+        attribute = attribute.replaceAll(":","");
+
+        return "\"" + attribute + "\"";
+    }
+
+    protected static String generateRandomJsonValue(){
+        double prob = Randomness.nextDouble();
         String value;
 
-        if (prob <= 1.0/7.0){
-            value = "\"" +  dynamicConstantPool.getRandomString() + "\"";
-        } else if (prob <= 2.0/7.0) {
+        if (prob <= 1.0/6.0){
+            value = getRandomString();
+        } else if (prob <= 2.0/6.0) {
             value = "" + dynamicConstantPool.getRandomDouble();
-        } else if (prob <= 3.0/7.0) {
+        } else if (prob <= 3.0/6.0) {
             value = "" + dynamicConstantPool.getRandomFloat();
-        } else if (prob <= 4.0/7.0) {
+        } else if (prob <= 4.0/6.0) {
             value = "" + dynamicConstantPool.getRandomInt();
-        } else if (prob <= 5.0/7.0) {
+        } else if (prob <= 5.0/6.0) {
             value = "" + dynamicConstantPool.getRandomLong();
-        } else if (prob <= 6.0/7.0) {
-            value = "[" + dynamicConstantPool.getRandomString() +"]";
         } else {
             value = "" + Randomness.nextBoolean();
         }
-
-        return "{" + attribute + ":" + value + "}";
+        return value;
     }
 
     protected String replaceString(String string){
-        dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
-
         // if the grammar produces a null or an empty string,
         // we generate random json strings
         if (string == null || string.equals("") ||
@@ -123,7 +153,6 @@ public class JsonMutator<T extends Chromosome> {
             matches.add(matcher.group());
         }
 
-
         if (matches.size()>0){
             int index = Randomness.nextInt(matches.size());
             String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
@@ -135,6 +164,7 @@ public class JsonMutator<T extends Chromosome> {
     }
 
     public void inject(T chromosome) {
+        dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
         TestChromosome testChromosome = (TestChromosome) chromosome;
         TestCase testCase = testChromosome.getTestCase();
 
@@ -151,15 +181,7 @@ public class JsonMutator<T extends Chromosome> {
                 if (Randomness.nextDouble() <= 1.0 / count) {
                     // Replace input with mutated input
 
-                    int seedIndex = Randomness.nextInt(Properties.FUZZER_SEED.length);
-                    String seed = Properties.FUZZER_SEED[seedIndex];
-
-                    Optional<String> strings = mutator.forStrings().mutate(seed, 1).findFirst();
-                    if (strings.isPresent()) {
-                        seed = strings.get();
-                    }
-
-                    stringStatement.setValue(seed);
+                    stringStatement.setValue(generateRandomJson());
                 }
             }
         }
