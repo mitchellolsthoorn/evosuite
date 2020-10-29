@@ -153,17 +153,15 @@ public class JsonMutator<T extends Chromosome> {
             matches.add(matcher.group());
         }
 
-        String new_string = null;
-
         if (matches.size()>0){
             int index = Randomness.nextInt(matches.size());
             String new_item = "\"" + dynamicConstantPool.getRandomString() + "\"";
-            new_string = string.replace(matches.get(index), new_item);
+            String new_string = string.replace(matches.get(index), new_item);
+            return new_string;
+        } else {
+            return string;
         }
-
-        return new_string;
     }
-
 
     public void inject(T chromosome) {
         dynamicConstantPool = ConstantPoolManager.getInstance().getConstantPool();
@@ -237,6 +235,8 @@ public class JsonMutator<T extends Chromosome> {
         } catch (MalformedJsonException e) {
             return false;
         } catch (IOException e) {
+            return false;
+        } catch (Exception e) {
             return false;
         }
     }
