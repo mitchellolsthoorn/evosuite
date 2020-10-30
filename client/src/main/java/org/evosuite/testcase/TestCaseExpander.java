@@ -84,7 +84,7 @@ public class TestCaseExpander {
 
 			PrimitiveStatement primitive = PrimitiveStatement.getPrimitiveStatement(test,
 			                                                                        new GenericClass(
-			                                                                                value.getClass()));
+			                                                                                value.getClass()), false);
 			primitive.setValue(value);
 			VariableReference replacement = test.addStatement(primitive, position);
 			test.replace(statement.getReturnValue(), replacement);
@@ -200,7 +200,7 @@ public class TestCaseExpander {
 			VariableReference retVal = null;
 			if (index.isPrimitive()) {
 				PrimitiveStatement<?> primitive = PrimitiveStatement.getPrimitiveStatement(test,
-				                                                                           index.getGenericClass());
+				                                                                           index.getGenericClass(), false);
 				retVal = test.addStatement(primitive, position++);
 			} else {
 				NullStatement nullStatement = new NullStatement(test, index.getType());

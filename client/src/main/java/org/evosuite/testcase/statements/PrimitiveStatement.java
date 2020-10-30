@@ -24,6 +24,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import org.evosuite.Properties;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFactory;
+import org.evosuite.testcase.statements.grammar.JsonStatement;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.variable.VariableReferenceImpl;
 import org.evosuite.testcase.statements.environment.EnvironmentStatements;
@@ -112,7 +113,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
     }
 
     public static PrimitiveStatement<?> getPrimitiveStatement(TestCase tc, Class<?> clazz) {
-        return getPrimitiveStatement(tc, new GenericClass(clazz));
+        return getPrimitiveStatement(tc, new GenericClass(clazz), false);
     }
 
     /**
@@ -125,7 +126,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static PrimitiveStatement<?> getPrimitiveStatement(TestCase tc,
-                                                              GenericClass genericClass) {
+                                                              GenericClass genericClass, boolean clone) {
         // TODO This kills the benefit of inheritance.
         // Let each class implement the clone method instead
 
@@ -149,7 +150,12 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
         } else if (clazz == byte.class) {
             statement = new BytePrimitiveStatement(tc);
         } else if (clazz.equals(String.class)) {
-            statement = new StringPrimitiveStatement(tc);
+            if (!clone && Properties.GRAMMAR && Randomness.nextDouble() <= Properties.GRAMMAR_INJECTION) {
+                logger.debug("Using grammar injection");
+                statement = new JsonStatement(tc);
+            } else {
+                statement = new StringPrimitiveStatement(tc);
+            }
         } else if (GenericTypeReflector.erase(clazz).isEnum()) {
             statement = new EnumPrimitiveStatement(tc, GenericTypeReflector.erase(clazz));
         } else if (EnvironmentStatements.isEnvironmentData(clazz)) {
@@ -216,7 +222,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
     public static PrimitiveStatement<?> getRandomStatement(TestCase tc,
                                                            GenericClass clazz, int position) {
 
-        PrimitiveStatement<?> statement = getPrimitiveStatement(tc, clazz);
+        PrimitiveStatement<?> statement = getPrimitiveStatement(tc, clazz, false);
         statement.randomize();
         return statement;
 
@@ -229,7 +235,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
     public Statement copy(TestCase newTestCase, int offset) {
         @SuppressWarnings("unchecked")
         PrimitiveStatement<T> clone = (PrimitiveStatement<T>) getPrimitiveStatement(newTestCase,
-                retval.getGenericClass());
+                retval.getGenericClass(), true);
         clone.setValue(value);
         // clone.assertions = copyAssertions(newTestCase, offset);
         return clone;

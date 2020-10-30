@@ -80,19 +80,19 @@ public class StringPrimitiveStatement extends PrimitiveStatement<String> {
 		value = "";
 	}
 
-	private static String removeCharAt(String s, int pos) {
+	protected static String removeCharAt(String s, int pos) {
 		return s.substring(0, pos) + s.substring(pos + 1);
 	}
 
-	private static String replaceCharAt(String s, int pos, char c) {
+	protected static String replaceCharAt(String s, int pos, char c) {
 		return s.substring(0, pos) + c + s.substring(pos + 1);
 	}
 
-	private static String insertCharAt(String s, int pos, char c) {
+	protected static String insertCharAt(String s, int pos, char c) {
 		return s.substring(0, pos) + c + s.substring(pos);
 	}
 
-	private String StringInsert(String s, int pos) {
+	protected String StringInsert(String s, int pos) {
 		final double ALPHA = 0.5;
 		int count = 1;
 
@@ -184,7 +184,7 @@ public class StringPrimitiveStatement extends PrimitiveStatement<String> {
 	/** {@inheritDoc} */
 	@Override
 	public void randomize() {
-		if (Randomness.nextDouble() >= Properties.PRIMITIVE_POOL)
+		if (Randomness.nextDouble() <= Properties.PRIMITIVE_POOL)
 			value = Randomness.nextString(Randomness.nextInt(Properties.STRING_LENGTH));
 		else {
 			ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();

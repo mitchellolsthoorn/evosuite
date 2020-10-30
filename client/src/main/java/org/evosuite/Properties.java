@@ -159,6 +159,7 @@ public class Properties {
 	@DoubleValue(min = 0.0, max = 1.0)
 	public static double DYNAMIC_POOL = 0.5;
 
+	// TODO: wrong type
 	@Parameter(key = "variable_pool", group = "Test Creation", description = "Set probability of a constant based on the number of occurrences")
 	@DoubleValue(min = 0.0, max = 1.0)
 	public static boolean VARIABLE_POOL = false;
@@ -356,6 +357,27 @@ public class Properties {
 
 	@Parameter(key = "fuzzer_max_mutation_rounds", group = "Search Algorithm", description = "Fuzzer mutation rounds")
 	public static int FUZZER_MAX_MUTATION_ROUNDS = 10;
+
+	@Parameter(key = "grammar", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
+	public static boolean GRAMMAR = false;
+
+	@Parameter(key = "grammar_injection", group = "Search Algorithm", description = "Grammar injection probability")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_INJECTION = 0.1;
+
+	@Parameter(key = "grammar_json_array", group = "Search Algorithm", description = "Grammar injection probability")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_ARRAY = 0.2;
+
+	@Parameter(key = "grammar_json_max_entries", group = "Search Algorithm", description = "Grammar injection probability")
+	public static int GRAMMAR_JSON_MAX_ENTRIES = 10;
+
+	@Parameter(key = "grammar_json_max_level", group = "Search Algorithm", description = "Grammar injection probability")
+	public static int GRAMMAR_JSON_MAX_LEVEL = 4;
+
+	@Parameter(key = "grammar_json_primitive", group = "Search Algorithm", description = "Grammar injection probability")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_PRIMITIVE = 0.8;
 
 	/** Different models of neighbourhoods in the Cellular GA **/
 	public enum CGA_Models{
