@@ -94,6 +94,7 @@ public class JsonStatement extends StringPrimitiveStatement {
     public boolean mutate(TestCase test, TestFactory factory) {
         JsonElement oldVal = this.jsonElement;
 
+        // TODO: Add limit for loop
         while (this.jsonElement.equals(oldVal)) {
             if (Randomness.nextDouble() <= Properties.RANDOM_PERTURBATION) {
                 randomize();

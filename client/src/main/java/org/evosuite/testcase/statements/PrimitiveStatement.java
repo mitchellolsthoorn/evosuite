@@ -153,6 +153,7 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
             if (!clone && Properties.GRAMMAR && Randomness.nextDouble() <= Properties.GRAMMAR_INJECTION) {
                 logger.debug("Using grammar injection");
                 statement = new JsonStatement(tc);
+                statement.randomize();
             } else {
                 statement = new StringPrimitiveStatement(tc);
             }
