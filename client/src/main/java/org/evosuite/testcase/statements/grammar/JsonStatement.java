@@ -95,11 +95,16 @@ public class JsonStatement extends StringPrimitiveStatement {
         JsonElement oldVal = this.jsonElement;
 
         // TODO: Add limit for loop
-        while (this.jsonElement.equals(oldVal)) {
+        int lim = 4;
+        int current = 0;
+
+        while (this.jsonElement.equals(oldVal) && current < lim) {
             if (Randomness.nextDouble() <= Properties.RANDOM_PERTURBATION) {
                 randomize();
-            } else
+            } else {
                 delta();
+            }
+            current++;
         }
 
         this.value = gson.toJson(this.jsonElement);
@@ -130,17 +135,17 @@ public class JsonStatement extends StringPrimitiveStatement {
         } else {
             if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) {
                 JsonArray array2 = new JsonArray();
-                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-                for (int i = 0; i < max_entries; i++) {
-                    this.addRandomJsonElements(array2, newLevel);
-                }
+//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
+//                for (int i = 0; i < max_entries; i++) {
+//                    this.addRandomJsonElements(array2, newLevel);
+//                }
                 array.add(array2);
             } else {
                 JsonObject object2 = new JsonObject();
-                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-                for (int i = 0; i < max_entries; i++) {
-                    this.addRandomJsonElements(object2, newLevel);
-                }
+//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
+//                for (int i = 0; i < max_entries; i++) {
+//                    this.addRandomJsonElements(object2, newLevel);
+//                }
                 array.add(object2);
             }
         }
@@ -169,17 +174,17 @@ public class JsonStatement extends StringPrimitiveStatement {
         } else {
             if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) {
                 JsonArray array2 = new JsonArray();
-                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-                for (int i = 0; i < max_entries; i++) {
-                    this.addRandomJsonElements(array2, newLevel);
-                }
+//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
+//                for (int i = 0; i < max_entries; i++) {
+//                    this.addRandomJsonElements(array2, newLevel);
+//                }
                 object.add(constantPool.getRandomString(), array2);
             } else {
                 JsonObject object2 = new JsonObject();
-                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-                for (int i = 0; i < max_entries; i++) {
-                    this.addRandomJsonElements(object2, newLevel);
-                }
+//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
+//                for (int i = 0; i < max_entries; i++) {
+//                    this.addRandomJsonElements(object2, newLevel);
+//                }
                 object.add(constantPool.getRandomString(), object2);
             }
         }
@@ -308,7 +313,7 @@ public class JsonStatement extends StringPrimitiveStatement {
         JsonElement element = this.jsonElement;
 
         if (element.isJsonNull()) {
-            this.randomize();
+            this.delta();
             return;
         } else if (element.isJsonPrimitive()) {
             JsonPrimitive primitive = (JsonPrimitive) element;
