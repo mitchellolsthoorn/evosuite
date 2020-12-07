@@ -94,7 +94,6 @@ public class JsonStatement extends StringPrimitiveStatement {
     public boolean mutate(TestCase test, TestFactory factory) {
         JsonElement oldVal = this.jsonElement;
 
-        // TODO: Add limit for loop
         int lim = 4;
         int current = 0;
 
@@ -112,79 +111,100 @@ public class JsonStatement extends StringPrimitiveStatement {
         return true;
     }
 
-    private void addRandomJsonElements(JsonArray array, int level) {
+    private void addRandomPrimitiveElement(JsonArray array) {
         ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
 
-        int newLevel = level + 1;
+        double P1 = Randomness.nextDouble();
+        if (P1 <= 1d / 6d) {
+            array.add(Randomness.nextBoolean());
+        } else if (P1 <= 2d / 6d) {
+            array.add(constantPool.getRandomInt());
+        } else if (P1 <= 3d / 6d) {
+            array.add(constantPool.getRandomLong());
+        } else if (P1 <= 4d / 6d) {
+            array.add(constantPool.getRandomDouble());
+        } else if (P1 <= 5d / 6d) {
+            array.add(constantPool.getRandomFloat());
+        } else {
+            array.add(constantPool.getRandomString());
+        }
+    }
 
-        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE || level >= Properties.GRAMMAR_JSON_MAX_LEVEL) {
-            double P1 = Randomness.nextDouble();
-            if (P1 <= 1d / 6d) {
-                array.add(Randomness.nextBoolean());
-            } else if (P1 <= 2d / 6d) {
-                array.add(constantPool.getRandomInt());
-            } else if (P1 <= 3d / 6d) {
-                array.add(constantPool.getRandomLong());
-            } else if (P1 <= 4d / 6d) {
-                array.add(constantPool.getRandomDouble());
-            } else if (P1 <= 5d / 6d) {
-                array.add(constantPool.getRandomFloat());
-            } else {
-                array.add(constantPool.getRandomString());
+    private void addRandomPrimitiveElement(JsonObject object) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        double P1 = Randomness.nextDouble();
+        if (P1 <= 1d / 6d) {
+            object.addProperty(constantPool.getRandomString(), Randomness.nextBoolean());
+        } else if (P1 <= 2d / 6d) {
+            object.addProperty(constantPool.getRandomString(), constantPool.getRandomInt());
+        } else if (P1 <= 3d / 6d) {
+            object.addProperty(constantPool.getRandomString(), constantPool.getRandomLong());
+        } else if (P1 <= 4d / 6d) {
+            object.addProperty(constantPool.getRandomString(), constantPool.getRandomDouble());
+        } else if (P1 <= 5d / 6d) {
+            object.addProperty(constantPool.getRandomString(), constantPool.getRandomFloat());
+        } else {
+            object.addProperty(constantPool.getRandomString(), constantPool.getRandomString());
+        }
+    }
+
+    private void addRandomJsonElement(JsonArray array) {
+        if (Randomness.nextDouble() <= 0.2d) { // Add second layer elements
+            for (JsonElement element : array) {
+                if (element.isJsonArray()) {
+                    JsonArray array2 = element.getAsJsonArray();
+                    this.addRandomPrimitiveElement(array2);
+                    return;
+                } else if (element.isJsonObject()) {
+                    JsonObject object2 = element.getAsJsonObject();
+                    this.addRandomPrimitiveElement(object2);
+                    return;
+                }
             }
+        }
+
+        // TODO: Add null element
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE) {
+            this.addRandomPrimitiveElement(array);
         } else {
             if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) {
                 JsonArray array2 = new JsonArray();
-//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-//                for (int i = 0; i < max_entries; i++) {
-//                    this.addRandomJsonElements(array2, newLevel);
-//                }
                 array.add(array2);
             } else {
                 JsonObject object2 = new JsonObject();
-//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-//                for (int i = 0; i < max_entries; i++) {
-//                    this.addRandomJsonElements(object2, newLevel);
-//                }
                 array.add(object2);
             }
         }
     }
 
-    private void addRandomJsonElements(JsonObject object, int level) {
+    private void addRandomJsonElement(JsonObject object) {
         ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
 
-        int newLevel = level + 1;
-
-        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE || level >= Properties.GRAMMAR_JSON_MAX_LEVEL) {
-            double P1 = Randomness.nextDouble();
-            if (P1 <= 1d / 6d) {
-                object.addProperty(constantPool.getRandomString(), Randomness.nextBoolean());
-            } else if (P1 <= 2d / 6d) {
-                object.addProperty(constantPool.getRandomString(), constantPool.getRandomInt());
-            } else if (P1 <= 3d / 6d) {
-                object.addProperty(constantPool.getRandomString(), constantPool.getRandomLong());
-            } else if (P1 <= 4d / 6d) {
-                object.addProperty(constantPool.getRandomString(), constantPool.getRandomDouble());
-            } else if (P1 <= 5d / 6d) {
-                object.addProperty(constantPool.getRandomString(), constantPool.getRandomFloat());
-            } else {
-                object.addProperty(constantPool.getRandomString(), constantPool.getRandomString());
+        if (Randomness.nextDouble() <= 0.2d) { // Add second layer elements
+            for (String property : object.keySet()) {
+                JsonElement element = object.get(property);
+                if (element.isJsonArray()) {
+                    JsonArray array2 = element.getAsJsonArray();
+                    this.addRandomPrimitiveElement(array2);
+                    return;
+                } else if (element.isJsonObject()) {
+                    JsonObject object2 = element.getAsJsonObject();
+                    this.addRandomPrimitiveElement(object2);
+                    return;
+                }
             }
+        }
+
+        // TODO: Add null element
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE) {
+            this.addRandomPrimitiveElement(object);
         } else {
             if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) {
                 JsonArray array2 = new JsonArray();
-//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-//                for (int i = 0; i < max_entries; i++) {
-//                    this.addRandomJsonElements(array2, newLevel);
-//                }
                 object.add(constantPool.getRandomString(), array2);
             } else {
                 JsonObject object2 = new JsonObject();
-//                int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-//                for (int i = 0; i < max_entries; i++) {
-//                    this.addRandomJsonElements(object2, newLevel);
-//                }
                 object.add(constantPool.getRandomString(), object2);
             }
         }
@@ -201,17 +221,267 @@ public class JsonStatement extends StringPrimitiveStatement {
         if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) { // Json array
             JsonArray array = new JsonArray();
             int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-            for (int i = 0; i < max_entries; i++) {
-                this.addRandomJsonElements(array, 0);
+            for (int i = 0; i <= max_entries; i++) {
+                this.addRandomJsonElement(array);
             }
             this.jsonElement = array;
         } else { // Json object
             JsonObject object = new JsonObject();
             int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
-            for (int i = 0; i < max_entries; i++) {
-                this.addRandomJsonElements(object, 0);
+            for (int i = 0; i <= max_entries; i++) {
+                this.addRandomJsonElement(object);
             }
             this.jsonElement = object;
+        }
+    }
+
+    private void deleteRandomJsonElement(JsonArray array) {
+        if (array.size() <= 0) {
+            return;
+        }
+
+        if (Randomness.nextDouble() <= 0.2d) { // delete second layer elements
+            for (JsonElement element : array) { // TODO: Don't pick the first one
+                if (element.isJsonArray()) {
+                    JsonArray array2 = element.getAsJsonArray();
+
+                    if (array2.size() <= 0) {
+                        break;
+                    }
+
+                    int index = Randomness.nextInt(array2.size());
+                    array2.remove(index);
+                    return;
+                } else if (element.isJsonObject()) {
+                    JsonObject object2 = element.getAsJsonObject();
+
+                    if (object2.size() <= 0) {
+                        break;
+                    }
+
+                    int index = Randomness.nextInt(object2.size());
+                    //Randomness.choice(object2.keySet());
+                    // TODO: look into collection.choice
+                    int current = 0;
+                    String property = null; // TODO: remove null
+                    for (String prop: object2.keySet()) {
+                        if (current == index) {
+                            property = prop;
+                            break;
+                        }
+                        current++;
+                    }
+                    object2.remove(property);
+                    return;
+                }
+            }
+        }
+
+        int index = Randomness.nextInt(array.size());
+        array.remove(index);
+    }
+
+    private void deleteRandomJsonElement(JsonObject object) {
+        if (object.size() <= 0) {
+            return;
+        }
+
+        if (Randomness.nextDouble() <= 0.2d) { // Delete second layer elements
+            for (String property : object.keySet()) { // TODO: Don't pick the first one
+                JsonElement element = object.get(property);
+                if (element.isJsonArray()) {
+                    JsonArray array2 = element.getAsJsonArray();
+
+                    if (array2.size() <= 0) {
+                        break;
+                    }
+
+                    int index = Randomness.nextInt(array2.size());
+                    array2.remove(index);
+                    return;
+                } else if (element.isJsonObject()) {
+                    JsonObject object2 = element.getAsJsonObject();
+
+                    if (object2.size() <= 0) {
+                        break;
+                    }
+
+                    int index2 = Randomness.nextInt(object2.size());
+
+                    int current2 = 0;
+                    String property2 = null; // TODO: remove null
+                    for (String prop2: object2.keySet()) {
+                        if (current2 == index2) {
+                            property = prop2;
+                            break;
+                        }
+                        current2++;
+                    }
+                    object2.remove(property);
+                    return;
+                }
+            }
+        }
+
+        int index = Randomness.nextInt(object.size());
+
+        int current = 0;
+        String property = null; // TODO: remove null
+        for (String prop: object.keySet()) {
+            if (current == index) {
+                property = prop;
+                break;
+            }
+            current++;
+        }
+        object.remove(property);
+    }
+
+    private void changeRandomPrimitiveElement(JsonArray array) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (array.size() <= 0) {
+            return;
+        }
+
+        int index = Randomness.nextInt(array.size());
+        JsonElement element = array.get(index);
+
+        if (element.isJsonPrimitive()) {
+            JsonPrimitive primitive = element.getAsJsonPrimitive();
+
+            if (primitive.isBoolean()) {
+                array.set(index, new JsonPrimitive(!primitive.getAsBoolean()));
+            } else if (primitive.isNumber()) {
+                double P1 = Randomness.nextDouble();
+                if (P1 <= 1d / 4d) {
+                    array.set(index, new JsonPrimitive(constantPool.getRandomInt()));
+                } else if (P1 <= 2d / 4d) {
+                    array.set(index, new JsonPrimitive(constantPool.getRandomInt()));
+                } else if (P1 <= 3d / 4d) {
+                    array.set(index, new JsonPrimitive(constantPool.getRandomLong()));
+                } else {
+                    array.set(index, new JsonPrimitive(constantPool.getRandomDouble()));
+                }
+            } else if (primitive.isString()) {
+                array.set(index, new JsonPrimitive(constantPool.getRandomString()));
+            }
+        }
+    }
+
+    private void changeRandomPrimitiveElement(JsonObject object) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (object.size() <= 0) {
+            return;
+        }
+
+        int index = Randomness.nextInt(object.size());
+
+        int current = 0;
+        String property = null; // TODO: remove null
+        for (String prop: object.keySet()) {
+            if (current == index) {
+                property = prop;
+                break;
+            }
+            current++;
+        }
+
+        JsonElement element = object.get(property);
+
+        double P = Randomness.nextDouble();
+        if (P <= 1d / 2d) { // Change property name
+            object.remove(property);
+            object.add(constantPool.getRandomString(), element);
+        } else {
+            if (element.isJsonPrimitive()) {
+                JsonPrimitive primitive = element.getAsJsonPrimitive();
+
+                if (primitive.isBoolean()) {
+                    object.add(property, new JsonPrimitive(!primitive.getAsBoolean()));
+                } else if (primitive.isNumber()) {
+                    double P1 = Randomness.nextDouble();
+                    if (P1 <= 1d / 4d) {
+                        object.add(property, new JsonPrimitive(constantPool.getRandomInt()));
+                    } else if (P1 <= 2d / 4d) {
+                        object.add(property, new JsonPrimitive(constantPool.getRandomInt()));
+                    } else if (P1 <= 3d / 4d) {
+                        object.add(property, new JsonPrimitive(constantPool.getRandomLong()));
+                    } else {
+                        object.add(property, new JsonPrimitive(constantPool.getRandomDouble()));
+                    }
+                } else if (primitive.isString()) {
+                    object.add(property, new JsonPrimitive(constantPool.getRandomString()));
+                }
+            }
+        }
+    }
+
+    private void changeRandomJsonElement(JsonArray array) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (array.size() <= 0) {
+            return;
+        }
+
+        int index = Randomness.nextInt(array.size());
+        JsonElement element = array.get(index);
+
+        if (element.isJsonNull()) {
+            // TODO: inspect
+            array.remove(index);
+            this.addRandomPrimitiveElement(array);
+        } else if (element.isJsonPrimitive()) {
+            this.changeRandomPrimitiveElement(array);
+        } else if (element.isJsonArray()) {
+            JsonArray array2 = element.getAsJsonArray();
+            this.changeRandomPrimitiveElement(array2);
+        } else if (element.isJsonObject()) {
+            JsonObject object2 = element.getAsJsonObject();
+            this.changeRandomPrimitiveElement(object2);
+        }
+    }
+
+    private void changeRandomJsonElement(JsonObject object) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (object.size() <= 0) {
+            return;
+        }
+
+        int index = Randomness.nextInt(object.size());
+
+        int current = 0;
+        String property = null; // TODO: remove null
+        for (String prop: object.keySet()) {
+            if (current == index) {
+                property = prop;
+                break;
+            }
+            current++;
+        }
+
+        JsonElement element = object.get(property);
+
+        double P = Randomness.nextDouble();
+        if (P <= 1d / 2d) { // Change property name
+            object.remove(property);
+            object.add(constantPool.getRandomString(), element);
+        } else { // Change property value
+            if (element.isJsonNull()) {
+                // TODO: inspect
+                object.remove(property);
+                this.addRandomPrimitiveElement(object);
+            } else if (element.isJsonPrimitive()) {
+                this.changeRandomPrimitiveElement(object);
+            } else if (element.isJsonArray()) {
+                JsonArray array2 = element.getAsJsonArray();
+                this.changeRandomPrimitiveElement(array2);
+            } else if (element.isJsonObject()) {
+                JsonObject object2 = element.getAsJsonObject();
+                this.changeRandomPrimitiveElement(object2);
+            }
         }
     }
 
@@ -223,43 +493,22 @@ public class JsonStatement extends StringPrimitiveStatement {
     public void delta() {
         JsonElement element = this.jsonElement;
 
-        double P1 = 1d / 3d;
-
         if (element.isJsonArray()) { // Json array
             JsonArray array = (JsonArray) element;
 
             // Delete
-            if (Randomness.nextDouble() <= P1) {
-                double P2 = 1d / array.size();
-                JsonElement del = null;
-                for (JsonElement element1 : array) {
-                    if (Randomness.nextDouble() <= P2) {
-                        del = element1;
-                    }
-                }
-                if (del != null) {
-                    array.remove(del);
-                }
+            if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
+                this.deleteRandomJsonElement(array);
             }
 
             // Change
-            if (Randomness.nextDouble() < P1) {
-                double P2 = 1d / array.size();
-                JsonElement del = null;
-                for (JsonElement element1 : array) {
-                    if (Randomness.nextDouble() <= P2) {
-                        del = element1;
-                    }
-                }
-                if (del != null) {
-                    array.remove(del);
-                    this.addRandomJsonElements(array, 0);
-                }
+            if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
+                this.changeRandomJsonElement(array);
             }
 
             // Insert
-            if (Randomness.nextDouble() < P1) {
-                this.addRandomJsonElements(array, 0);
+            if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
+                this.addRandomJsonElement(array);
             }
 
             this.jsonElement = array;
@@ -267,37 +516,18 @@ public class JsonStatement extends StringPrimitiveStatement {
             JsonObject object = (JsonObject) element;
 
             // Delete
-            if (Randomness.nextDouble() <= P1) {
-                double P2 = 1d / object.size();
-                String del = null;
-                for (String property: object.keySet()) {
-                    if (Randomness.nextDouble() <= P2) {
-                        del = property;
-                    }
-                }
-                if (del != null) {
-                    object.remove(del);
-                }
+            if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
+                this.deleteRandomJsonElement(object);
             }
 
             // Change
-            if (Randomness.nextDouble() < P1) {
-                double P2 = 1d / object.size();
-                String del = null;
-                for (String property: object.keySet()) {
-                    if (Randomness.nextDouble() <= P2) {
-                        del = property;
-                    }
-                }
-                if (del != null) {
-                    object.remove(del);
-                    this.addRandomJsonElements(object, 0);
-                }
+            if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
+                this.changeRandomJsonElement(object);
             }
 
             // Insert
-            if (Randomness.nextDouble() < P1) {
-                this.addRandomJsonElements(object, 0);
+            if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
+                this.addRandomJsonElement(object);
             }
 
             this.jsonElement = object;
@@ -331,11 +561,11 @@ public class JsonStatement extends StringPrimitiveStatement {
                 element = new JsonPrimitive(s);
             }
         } else if (element.isJsonArray()) {
-            JsonArray array = (JsonArray) element;
+            JsonArray array = element.getAsJsonArray();
             this.delta();
             return;
         } else if (element.isJsonObject()) {
-            JsonObject object = (JsonObject) element;
+            JsonObject object = element.getAsJsonObject();
             this.delta();
             return;
         }
