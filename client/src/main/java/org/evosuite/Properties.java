@@ -365,19 +365,31 @@ public class Properties {
 	@DoubleValue(min = 0.0, max = 1.0)
 	public static double GRAMMAR_INJECTION = 0.1;
 
-	@Parameter(key = "grammar_json_array", group = "Search Algorithm", description = "Grammar injection probability")
+	@Parameter(key = "grammar_json_mutation_retry_limit", group = "Search Algorithm", description = "The maximum number of times to retry mutation without a change")
+	public static int GRAMMAR_JSON_MUTATION_RETRY_LIMIT = 4;
+
+	@Parameter(key = "grammar_json_max_elements", group = "Search Algorithm", description = "The maximum of elements to be inserted randomly")
+	public static int GRAMMAR_JSON_MAX_ELEMENTS = 10;
+
+	@Parameter(key = "grammar_json_nested", group = "Search Algorithm", description = "The probability of injecting nested elements in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
-	public static double GRAMMAR_JSON_ARRAY = 0.2;
+	public static double GRAMMAR_JSON_NESTED = 0.2;
 
-	@Parameter(key = "grammar_json_max_entries", group = "Search Algorithm", description = "Grammar injection probability")
-	public static int GRAMMAR_JSON_MAX_ENTRIES = 10;
-
-	@Parameter(key = "grammar_json_max_level", group = "Search Algorithm", description = "Grammar injection probability")
-	public static int GRAMMAR_JSON_MAX_LEVEL = 4;
-
-	@Parameter(key = "grammar_json_primitive", group = "Search Algorithm", description = "Grammar injection probability")
+	@Parameter(key = "grammar_json_null", group = "Search Algorithm", description = "The probability of injecting a null value in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
-	public static double GRAMMAR_JSON_PRIMITIVE = 0.8;
+	public static double GRAMMAR_JSON_NULL = 0.1;
+
+	@Parameter(key = "grammar_json_primitive", group = "Search Algorithm", description = "The probability of injecting a primitive value in a JSON structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_PRIMITIVE = 0.6;
+
+	@Parameter(key = "grammar_json_array", group = "Search Algorithm", description = "The probability of injecting an array in a JSON structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_ARRAY = 0.1;
+
+	@Parameter(key = "grammar_json_property", group = "Search Algorithm", description = "The probability of mutating the key value in a JSON structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_PROPERTY = 0.3;
 
 	/** Different models of neighbourhoods in the Cellular GA **/
 	public enum CGA_Models{

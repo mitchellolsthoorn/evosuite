@@ -128,7 +128,7 @@ public class XmlStatement extends StringPrimitiveStatement {
     @Override
     public void randomize() {
         HashMap object = new HashMap();
-        int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ENTRIES);
+        int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ELEMENTS);
         for (int i = 0; i <= max_entries; i++) {
             this.addRandomXmlElement(object);
         }
