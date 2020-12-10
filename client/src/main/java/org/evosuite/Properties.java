@@ -358,18 +358,18 @@ public class Properties {
 	@Parameter(key = "fuzzer_max_mutation_rounds", group = "Search Algorithm", description = "Fuzzer mutation rounds")
 	public static int FUZZER_MAX_MUTATION_ROUNDS = 10;
 
-	@Parameter(key = "grammar", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
-	public static boolean GRAMMAR = false;
-
-	@Parameter(key = "grammar_injection", group = "Search Algorithm", description = "Grammar injection probability")
-	@DoubleValue(min = 0.0, max = 1.0)
-	public static double GRAMMAR_INJECTION = 0.1;
-
 	@Parameter(key = "grammar_mutation_retry_limit", group = "Search Algorithm", description = "The maximum number of times to retry mutation without a change")
 	public static int GRAMMAR_MUTATION_RETRY_LIMIT = 4;
 
 	@Parameter(key = "grammar_max_elements", group = "Search Algorithm", description = "The maximum of elements to be inserted randomly")
 	public static int GRAMMAR_MAX_ELEMENTS = 10;
+
+	@Parameter(key = "grammar_json", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
+	public static boolean GRAMMAR_JSON = false;
+
+	@Parameter(key = "grammar_json_injection", group = "Search Algorithm", description = "Grammar injection probability")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_JSON_INJECTION = 0.1;
 
 	@Parameter(key = "grammar_json_nested", group = "Search Algorithm", description = "The probability of injecting nested elements in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
@@ -390,6 +390,13 @@ public class Properties {
 	@Parameter(key = "grammar_json_property", group = "Search Algorithm", description = "The probability of mutating the key value in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
 	public static double GRAMMAR_JSON_PROPERTY = 0.3;
+
+	@Parameter(key = "grammar_xml", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
+	public static boolean GRAMMAR_XML = false;
+
+	@Parameter(key = "grammar_xml_injection", group = "Search Algorithm", description = "Grammar injection probability")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_INJECTION = 0.1;
 
 	/** Different models of neighbourhoods in the Cellular GA **/
 	public enum CGA_Models{

@@ -25,6 +25,7 @@ import org.evosuite.Properties;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.statements.grammar.JsonStatement;
+import org.evosuite.testcase.statements.grammar.XmlStatement;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.variable.VariableReferenceImpl;
 import org.evosuite.testcase.statements.environment.EnvironmentStatements;
@@ -150,9 +151,14 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
         } else if (clazz == byte.class) {
             statement = new BytePrimitiveStatement(tc);
         } else if (clazz.equals(String.class)) {
-            if (!clone && Properties.GRAMMAR && Randomness.nextDouble() <= Properties.GRAMMAR_INJECTION) {
-                logger.debug("Using grammar injection");
+            double P = Randomness.nextDouble();
+            if (!clone && Properties.GRAMMAR_JSON && P <= Properties.GRAMMAR_JSON_INJECTION) {
+                logger.debug("Using grammar JSON injection");
                 statement = new JsonStatement(tc);
+                statement.randomize();
+            } else if (!clone && Properties.GRAMMAR_XML && P <= Properties.GRAMMAR_XML_INJECTION) {
+                logger.debug("Using grammar XML injection");
+                statement = new XmlStatement(tc);
                 statement.randomize();
             } else {
                 statement = new StringPrimitiveStatement(tc);
