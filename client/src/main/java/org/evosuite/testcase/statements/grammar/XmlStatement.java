@@ -14,6 +14,7 @@ import org.evosuite.utils.Randomness;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class XmlStatement extends StringPrimitiveStatement {
@@ -21,7 +22,9 @@ public class XmlStatement extends StringPrimitiveStatement {
     private static final long serialVersionUID = 278735526699835887L;
 
     private transient XmlMapper xmlMapper;
-    private transient HashMap xmlElement;
+    private transient HashMap<String, Object> xmlElement;
+
+    public static final String EMPTY_XML_STRING = "<HashMap></HashMap>";
 
     /**
      * <p>
@@ -31,11 +34,18 @@ public class XmlStatement extends StringPrimitiveStatement {
      * @param tc    a {@link TestCase} object.
      * @param value a {@link String} object.
      */
-    public XmlStatement(TestCase tc, String value) throws JsonProcessingException {
+    public XmlStatement(TestCase tc, String value) {
         super(tc, value);
 
         this.xmlMapper = new XmlMapper();
-        this.xmlElement = xmlMapper.readValue(value, HashMap.class);
+        try {
+            this.xmlElement = xmlMapper.readValue(value, HashMap.class);
+        } catch (JsonProcessingException e) {
+            this.xmlElement = new HashMap<>();
+            this.value = XmlStatement.EMPTY_XML_STRING;
+
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -46,10 +56,10 @@ public class XmlStatement extends StringPrimitiveStatement {
      * @param tc    a {@link TestCase} object.
      */
     public XmlStatement(TestCase tc) {
-        super(tc, "");
+        super(tc, XmlStatement.EMPTY_XML_STRING);
 
         this.xmlMapper = new XmlMapper();
-        this.xmlElement = new HashMap();
+        this.xmlElement = new HashMap<>();
     }
 
     /* (non-Javadoc)
@@ -88,8 +98,8 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void zero() {
-        this.value = ""; // TODO: not needed
-        this.xmlElement = new HashMap();
+        this.value = XmlStatement.EMPTY_XML_STRING; // TODO: not needed
+        this.xmlElement = new HashMap<>();
     }
 
     /* (non-Javadoc)
@@ -98,12 +108,11 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public boolean mutate(TestCase test, TestFactory factory) {
-        HashMap oldVal = this.xmlElement;
+        HashMap<String, Object> oldVal = this.xmlElement;
 
-        int lim = 4;
         int current = 0;
 
-        while (this.xmlElement.equals(oldVal) && current < lim) {
+        while (this.xmlElement.equals(oldVal) && current < Properties.GRAMMAR_MUTATION_RETRY_LIMIT) {
             if (Randomness.nextDouble() <= Properties.RANDOM_PERTURBATION) {
                 randomize();
             } else {
@@ -127,73 +136,12 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void randomize() {
-        HashMap object = new HashMap();
-        int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ELEMENTS);
+        HashMap<String, Object> object = new HashMap<>();
+        int max_entries = Randomness.nextInt(Properties.GRAMMAR_MAX_ELEMENTS);
         for (int i = 0; i <= max_entries; i++) {
-            this.addRandomXmlElement(object);
+            this.addRandomElement(object);
         }
         this.xmlElement = object;
-    }
-
-    private void deleteRandomXmlElement(HashMap object) {
-        if (object.size() <= 0) {
-            return;
-        }
-
-        int index = Randomness.nextInt(object.size());
-
-        int current = 0;
-        Object property = null; // TODO: remove null
-        for (Object prop: object.keySet()) {
-            if (current == index) {
-                property = prop;
-                break;
-            }
-            current++;
-        }
-        object.remove(property);
-    }
-
-    private void changeRandomXmlElement(HashMap object) {
-        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
-
-        if (object.size() <= 0) {
-            return;
-        }
-
-        int index = Randomness.nextInt(object.size());
-
-        int current = 0;
-        Object property = null; // TODO: remove null
-        for (Object prop: object.keySet()) {
-            if (current == index) {
-                property = prop;
-                break;
-            }
-            current++;
-        }
-
-        object.remove(property);
-        this.addRandomXmlElement(object);
-    }
-
-    private void addRandomXmlElement(HashMap object) {
-        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
-
-        double P1 = Randomness.nextDouble();
-        if (P1 <= 1d / 6d) {
-            object.put(constantPool.getRandomString(), Randomness.nextBoolean());
-        } else if (P1 <= 2d / 6d) {
-            object.put(constantPool.getRandomString(), constantPool.getRandomInt());
-        } else if (P1 <= 3d / 6d) {
-            object.put(constantPool.getRandomString(), constantPool.getRandomLong());
-        } else if (P1 <= 4d / 6d) {
-            object.put(constantPool.getRandomString(), constantPool.getRandomDouble());
-        } else if (P1 <= 5d / 6d) {
-            object.put(constantPool.getRandomString(), constantPool.getRandomFloat());
-        } else {
-            object.put(constantPool.getRandomString(), constantPool.getRandomString());
-        }
     }
 
     /* (non-Javadoc)
@@ -202,19 +150,21 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void delta() {
+        final double P = 1d / 3d;
+
         // Delete
-        if (Randomness.nextDouble() <= Properties.P_TEST_DELETE) {
-            this.deleteRandomXmlElement(this.xmlElement);
+        if (Randomness.nextDouble() <= P) {
+            this.deleteRandomElement(this.xmlElement);
         }
 
         // Change
-        if (Randomness.nextDouble() <= Properties.P_TEST_CHANGE) {
-            this.changeRandomXmlElement(this.xmlElement);
+        if (Randomness.nextDouble() <= P) {
+            this.changeRandomElement(this.xmlElement);
         }
 
         // Insert
-        if (Randomness.nextDouble() <= Properties.P_TEST_INSERT) {
-            this.addRandomXmlElement(this.xmlElement);
+        if (Randomness.nextDouble() <= P) {
+            this.addRandomElement(this.xmlElement);
         }
     }
 
@@ -224,7 +174,185 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void increment() {
-        return;
+        this.delta();;
+    }
+
+    private HashMap<String, Object> getCandidate(HashMap<String, Object> object) {
+        ArrayList<HashMap<String, Object>> candidates = new ArrayList<>();
+
+        if (object != null) {
+            for (String property : object.keySet()) {
+                Object element = object.get(property);
+                if (element instanceof HashMap) {
+                    HashMap<String, Object> map = (HashMap<String, Object>) element;
+                    candidates.add(map);
+                }
+            }
+            return Randomness.choice(candidates);
+        }
+        return null;
+    }
+
+    private Object getRandomPrimitive() {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        double P = Randomness.nextDouble();
+        if (P <= 1d / 6d) {
+            return Randomness.nextBoolean();
+        } else if (P <= 2d / 6d) {
+            return constantPool.getRandomInt();
+        } else if (P <= 3d / 6d) {
+            return constantPool.getRandomLong();
+        } else if (P <= 4d / 6d) {
+            return constantPool.getRandomDouble();
+        } else if (P <= 5d / 6d) {
+            return constantPool.getRandomFloat();
+        } else {
+            return constantPool.getRandomString();
+        }
+        // TODO: Maybe add Null element
+    }
+
+    private void addRandomElement(HashMap<String, Object> object) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Add second layer elements
+            HashMap<String, Object> candidate = this.getCandidate(object);
+            if (candidate != null) {
+                candidate.put(constantPool.getRandomString(), this.getRandomPrimitive());
+                return;
+            }
+        }
+
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NULL) {
+            object.put(constantPool.getRandomString(), null);
+        } else if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE) {
+            object.put(constantPool.getRandomString(), this.getRandomPrimitive());
+        } else {
+            object.put(constantPool.getRandomString(), new HashMap<>());
+        }
+    }
+
+    private void deleteRandomElement(HashMap<String, Object> object) {
+        if (object.size() < 1)
+            return;
+
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Delete second layer elements
+            HashMap<String, Object> candidate = this.getCandidate(object);
+            if (candidate != null) {
+                if (candidate.size() > 0) {
+                    Object candidate_property = Randomness.choice(candidate.keySet());
+                    candidate.remove(candidate_property);
+                }
+                return;
+            }
+        }
+
+        String property = Randomness.choice(object.keySet());
+        object.remove(property);
+    }
+
+    private String mutateString(String s) {
+        final double P = 1d / 3d;
+
+        // Delete
+        if (Randomness.nextDouble() <= P) {
+            double P1 = 1d / s.length();
+            for (int i = s.length(); i > 0; i--) {
+                if (Randomness.nextDouble() < P1) {
+                    s = removeCharAt(s, i - 1);
+                }
+            }
+        }
+
+        // Change
+        if (Randomness.nextDouble() <= P) {
+            double P1 = 1d / s.length();
+            for (int i = 0; i < s.length(); i++) {
+                if (Randomness.nextDouble() < P1) {
+                    s = replaceCharAt(s, i, Randomness.nextChar());
+                }
+            }
+        }
+
+        // Insert
+        if (Randomness.nextDouble() <= P) {
+            int pos = 0;
+            if (s.length() > 0)
+                pos = Randomness.nextInt(s.length());
+            s = StringInsert(s, pos);
+        }
+
+        return s;
+    }
+
+    private Object changeRandomPrimitiveElement(Object element) {
+        if (element instanceof Boolean) {
+            Boolean bool = (Boolean) element;
+            return !bool;
+        }
+
+        if (element instanceof Integer) {
+            Integer number = (Integer) element;
+            int delta = (int) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
+            return number + delta;
+        }
+
+        if (element instanceof Long) {
+            Long number = (Long) element;
+            long delta = (long) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
+            return number + delta;
+        }
+
+        if (element instanceof Double) {
+            Double number = (Double) element;
+            double delta = (double) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
+            return number + delta;
+        }
+
+        if (element instanceof Float){
+            Float number = (Float) element;
+            float delta = (float) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
+            return number + delta;
+        }
+
+        if (element instanceof String) {
+            String s = (String) element;
+            return this.mutateString(s);
+        }
+
+        return element;
+    }
+
+    private void changeRandomElement(HashMap<String, Object> object) {
+        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
+
+        if (object.size() < 1)
+            return;
+
+        String property = Randomness.choice(object.keySet());
+        Object element = object.get(property);
+
+        double P = Randomness.nextDouble();
+        if (P <= Properties.GRAMMAR_JSON_PROPERTY) { // Change property name
+            object.remove(property);
+            String newProperty = this.mutateString(property);
+            object.put(newProperty, element);
+        } else { // Change property value
+            if (element == null) {
+                object.put(property, this.getRandomPrimitive());
+                // TODO: Maybe add array or object elements
+            } else if (element instanceof HashMap) {
+                HashMap<String, Object> object2 = (HashMap<String, Object>) element;
+                if (object2.size() > 0) {
+                    String property2 = Randomness.choice(object2.keySet());
+                    Object element2 = object2.get(property2);
+                    object.put(property, this.changeRandomPrimitiveElement(element2));
+                }
+            } else {
+                object.put(property, this.changeRandomPrimitiveElement(element));
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -254,12 +382,7 @@ public class XmlStatement extends StringPrimitiveStatement {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        try {
-            return new XmlStatement(newTestCase, this.value); // TODO: optimize using deep copy
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return new XmlStatement(newTestCase, this.value); // TODO: optimize using deep copy
     }
 
     /* (non-Javadoc)

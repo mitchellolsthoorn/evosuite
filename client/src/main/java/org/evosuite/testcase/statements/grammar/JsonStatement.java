@@ -94,7 +94,7 @@ public class JsonStatement extends StringPrimitiveStatement {
 
         int current = 0;
 
-        while (this.jsonElement.equals(oldVal) && current < Properties.GRAMMAR_JSON_MUTATION_RETRY_LIMIT) {
+        while (this.jsonElement.equals(oldVal) && current < Properties.GRAMMAR_MUTATION_RETRY_LIMIT) {
             if (Randomness.nextDouble() <= Properties.RANDOM_PERTURBATION) {
                 this.randomize();
             } else {
@@ -116,14 +116,14 @@ public class JsonStatement extends StringPrimitiveStatement {
     public void randomize() {
         if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_ARRAY) { // Json array
             JsonArray array = new JsonArray();
-            int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ELEMENTS);
+            int max_entries = Randomness.nextInt(Properties.GRAMMAR_MAX_ELEMENTS);
             for (int i = 0; i <= max_entries; i++) {
                 this.addRandomElement(array);
             }
             this.jsonElement = array;
         } else { // Json object
             JsonObject object = new JsonObject();
-            int max_entries = Randomness.nextInt(Properties.GRAMMAR_JSON_MAX_ELEMENTS);
+            int max_entries = Randomness.nextInt(Properties.GRAMMAR_MAX_ELEMENTS);
             for (int i = 0; i <= max_entries; i++) {
                 this.addRandomElement(object);
             }
@@ -210,25 +210,31 @@ public class JsonStatement extends StringPrimitiveStatement {
 
     private JsonElement getCandidate(JsonArray array) {
         ArrayList<JsonElement> candidates = new ArrayList<>();
-        for (JsonElement element : array) {
-            if (element.isJsonArray() || element.isJsonObject()) {
-                candidates.add(element);
-            }
-        }
 
-        return Randomness.choice(candidates);
+        if (array != null) {
+            for (JsonElement element : array) {
+                if (element.isJsonArray() || element.isJsonObject()) {
+                    candidates.add(element);
+                }
+            }
+            return Randomness.choice(candidates);
+        }
+        return null;
     }
 
     private JsonElement getCandidate(JsonObject object) {
         ArrayList<JsonElement> candidates = new ArrayList<>();
-        for (String property : object.keySet()) {
-            JsonElement element = object.get(property);
-            if (element.isJsonArray() || element.isJsonObject()) {
-                candidates.add(element);
-            }
-        }
 
-        return Randomness.choice(candidates);
+        if (object != null) {
+            for (String property : object.keySet()) {
+                JsonElement element = object.get(property);
+                if (element.isJsonArray() || element.isJsonObject()) {
+                    candidates.add(element);
+                }
+            }
+            return Randomness.choice(candidates);
+        }
+        return null;
     }
 
     private void addRandomNestedElement(JsonElement element) {
@@ -271,7 +277,7 @@ public class JsonStatement extends StringPrimitiveStatement {
         ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
 
         if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Add second layer elements
-            JsonElement candidate = getCandidate(object);
+            JsonElement candidate = this.getCandidate(object);
             if (candidate != null) {
                 this.addRandomNestedElement(candidate);
                 return;
@@ -328,7 +334,7 @@ public class JsonStatement extends StringPrimitiveStatement {
             return;
 
         if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Delete second layer elements
-            JsonElement candidate = getCandidate(object);
+            JsonElement candidate = this.getCandidate(object);
             if (candidate != null) {
                 this.removeRandomNestedElement(candidate);
                 return;

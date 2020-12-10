@@ -365,11 +365,11 @@ public class Properties {
 	@DoubleValue(min = 0.0, max = 1.0)
 	public static double GRAMMAR_INJECTION = 0.1;
 
-	@Parameter(key = "grammar_json_mutation_retry_limit", group = "Search Algorithm", description = "The maximum number of times to retry mutation without a change")
-	public static int GRAMMAR_JSON_MUTATION_RETRY_LIMIT = 4;
+	@Parameter(key = "grammar_mutation_retry_limit", group = "Search Algorithm", description = "The maximum number of times to retry mutation without a change")
+	public static int GRAMMAR_MUTATION_RETRY_LIMIT = 4;
 
-	@Parameter(key = "grammar_json_max_elements", group = "Search Algorithm", description = "The maximum of elements to be inserted randomly")
-	public static int GRAMMAR_JSON_MAX_ELEMENTS = 10;
+	@Parameter(key = "grammar_max_elements", group = "Search Algorithm", description = "The maximum of elements to be inserted randomly")
+	public static int GRAMMAR_MAX_ELEMENTS = 10;
 
 	@Parameter(key = "grammar_json_nested", group = "Search Algorithm", description = "The probability of injecting nested elements in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
