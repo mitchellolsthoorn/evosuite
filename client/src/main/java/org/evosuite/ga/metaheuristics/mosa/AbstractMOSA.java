@@ -351,9 +351,39 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 		// Create a random parent population P0
 		this.generateInitialPopulation(Properties.POPULATION);
 
+		if (Properties.GRAMMAR_JSON) {
+			initializeJsonPopulation();
+		}
+
+		if (Properties.GRAMMAR_XML) {
+			initializeXmlPopulation();
+		}
+
 		// Determine fitness
 		this.calculateFitness();
 		this.notifyIteration();
+	}
+
+	/**
+	 * Initialize population with Json structures
+	 *
+	 * Replace all string statements with Json structures
+	 */
+	private void initializeJsonPopulation() {
+		Properties.GRAMMAR_JSON_INJECTION = true;
+		this.generateInitialPopulation(Properties.POPULATION);
+		Properties.GRAMMAR_JSON_INJECTION = false;
+	}
+
+	/**
+	 * Initialize population with Xml structures
+	 *
+	 * Replace all string statements with Xml structures
+	 */
+	private void initializeXmlPopulation() {
+		Properties.GRAMMAR_XML_INJECTION = true;
+		this.generateInitialPopulation(Properties.POPULATION);
+		Properties.GRAMMAR_XML_INJECTION = false;
 	}
 
 	/**

@@ -367,9 +367,12 @@ public class Properties {
 	@Parameter(key = "grammar_json", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
 	public static boolean GRAMMAR_JSON = false;
 
-	@Parameter(key = "grammar_json_injection", group = "Search Algorithm", description = "Grammar injection probability")
+	@Parameter(key = "grammar_json_injection", group = "Search Algorithm", description = "Grammar injection")
+	public static boolean GRAMMAR_JSON_INJECTION = false;
+
+	@Parameter(key = "grammar_json_invalid", group = "Search Algorithm", description = "The probability of copying the JSON structure in a string statement")
 	@DoubleValue(min = 0.0, max = 1.0)
-	public static double GRAMMAR_JSON_INJECTION = 0.1;
+	public static double GRAMMAR_JSON_INVALID = 0.1;
 
 	@Parameter(key = "grammar_json_nested", group = "Search Algorithm", description = "The probability of injecting nested elements in a JSON structure")
 	@DoubleValue(min = 0.0, max = 1.0)
@@ -394,9 +397,32 @@ public class Properties {
 	@Parameter(key = "grammar_xml", group = "Search Algorithm", description = "Enable input replacement with context specific fuzzer")
 	public static boolean GRAMMAR_XML = false;
 
-	@Parameter(key = "grammar_xml_injection", group = "Search Algorithm", description = "Grammar injection probability")
+	@Parameter(key = "grammar_xml_injection", group = "Search Algorithm", description = "Grammar injection")
+	public static boolean GRAMMAR_XML_INJECTION = false;
+
+	@Parameter(key = "grammar_xml_invalid", group = "Search Algorithm", description = "The probability of copying the XML structure in a string statement")
 	@DoubleValue(min = 0.0, max = 1.0)
-	public static double GRAMMAR_XML_INJECTION = 0.1;
+	public static double GRAMMAR_XML_INVALID = 0.1;
+
+	@Parameter(key = "grammar_xml_nested", group = "Search Algorithm", description = "The probability of injecting nested elements in a XML structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_NESTED = 0.2;
+
+	@Parameter(key = "grammar_xml_null", group = "Search Algorithm", description = "The probability of injecting a null value in a XML structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_NULL = 0.1;
+
+	@Parameter(key = "grammar_xml_primitive", group = "Search Algorithm", description = "The probability of injecting a primitive value in a XML structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_PRIMITIVE = 0.6;
+
+	@Parameter(key = "grammar_xml_array", group = "Search Algorithm", description = "The probability of injecting an array in a XML structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_ARRAY = 0.1;
+
+	@Parameter(key = "grammar_xml_property", group = "Search Algorithm", description = "The probability of mutating the key value in a XML structure")
+	@DoubleValue(min = 0.0, max = 1.0)
+	public static double GRAMMAR_XML_PROPERTY = 0.3;
 
 	/** Different models of neighbourhoods in the Cellular GA **/
 	public enum CGA_Models{

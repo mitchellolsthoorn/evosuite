@@ -80,19 +80,19 @@ public class StringPrimitiveStatement extends PrimitiveStatement<String> {
 		value = "";
 	}
 
-	protected static String removeCharAt(String s, int pos) {
+	private static String removeCharAt(String s, int pos) {
 		return s.substring(0, pos) + s.substring(pos + 1);
 	}
 
-	protected static String replaceCharAt(String s, int pos, char c) {
+	private static String replaceCharAt(String s, int pos, char c) {
 		return s.substring(0, pos) + c + s.substring(pos + 1);
 	}
 
-	protected static String insertCharAt(String s, int pos, char c) {
+	private static String insertCharAt(String s, int pos, char c) {
 		return s.substring(0, pos) + c + s.substring(pos);
 	}
 
-	protected String StringInsert(String s, int pos) {
+	private String StringInsert(String s, int pos) {
 		final double ALPHA = 0.5;
 		int count = 1;
 

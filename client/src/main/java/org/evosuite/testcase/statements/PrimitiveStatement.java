@@ -151,15 +151,11 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
         } else if (clazz == byte.class) {
             statement = new BytePrimitiveStatement(tc);
         } else if (clazz.equals(String.class)) {
-            double P = Randomness.nextDouble();
-            if (!clone && Properties.GRAMMAR_JSON && P <= Properties.GRAMMAR_JSON_INJECTION) {
-                logger.debug("Using grammar JSON injection");
-                statement = new JsonStatement(tc);
-                statement.randomize();
-            } else if (!clone && Properties.GRAMMAR_XML && P <= Properties.GRAMMAR_XML_INJECTION) {
-                logger.debug("Using grammar XML injection");
-                statement = new XmlStatement(tc);
-                statement.randomize();
+            // TODO: extract in separate method
+            if (!clone && Properties.GRAMMAR_JSON && Properties.GRAMMAR_JSON_INJECTION) {
+                statement = PrimitiveStatement.getJSONStatement(tc);
+            } else if (!clone && Properties.GRAMMAR_XML && Properties.GRAMMAR_XML_INJECTION) {
+                statement = PrimitiveStatement.getXmlStatement(tc);
             } else {
                 statement = new StringPrimitiveStatement(tc);
             }
@@ -215,6 +211,30 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
             throw new RuntimeException("Getting unknown type: " + clazz + " / "
                     + clazz.getClass());
         }
+        return statement;
+    }
+
+    /**
+     *
+     * @param tc
+     * @return
+     */
+    private static PrimitiveStatement<?> getJSONStatement(TestCase tc) {
+        logger.debug("Using grammar JSON injection");
+        PrimitiveStatement<?> statement = new JsonStatement(tc);
+        statement.randomize();
+        return statement;
+    }
+
+    /**
+     *
+     * @param tc
+     * @return
+     */
+    private static PrimitiveStatement<?> getXmlStatement(TestCase tc) {
+        logger.debug("Using grammar XML injection");
+        PrimitiveStatement<?> statement = new XmlStatement(tc);
+        statement.randomize();
         return statement;
     }
 

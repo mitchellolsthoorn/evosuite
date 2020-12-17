@@ -3,20 +3,27 @@ package org.evosuite.testcase.statements.grammar;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.evosuite.Properties;
-import org.evosuite.seeding.ConstantPool;
-import org.evosuite.seeding.ConstantPoolManager;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestFactory;
 import org.evosuite.testcase.execution.Scope;
+import org.evosuite.testcase.mutators.grammar.XmlMutator;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testcase.statements.StringPrimitiveStatement;
 import org.evosuite.utils.Randomness;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Statement class representing a XML structure as a string gene.
+ *
+ * By emulating complex structured information as a string it allows
+ * the algorithm to determine if an application responds well to this
+ * kind of structured data.
+ *
+ * @author Mitchell Olsthoorn
+ */
 public class XmlStatement extends StringPrimitiveStatement {
 
     private static final long serialVersionUID = 278735526699835887L;
@@ -24,12 +31,11 @@ public class XmlStatement extends StringPrimitiveStatement {
     private transient XmlMapper xmlMapper;
     private transient HashMap<String, Object> xmlElement;
 
+    // TODO: Allow for a variable root name
     public static final String EMPTY_XML_STRING = "<HashMap></HashMap>";
 
     /**
-     * <p>
      * Constructor for XmlStatement.
-     * </p>
      *
      * @param tc    a {@link TestCase} object.
      * @param value a {@link String} object.
@@ -43,17 +49,14 @@ public class XmlStatement extends StringPrimitiveStatement {
         } catch (JsonProcessingException e) {
             this.xmlElement = new HashMap<>();
             this.value = XmlStatement.EMPTY_XML_STRING;
-
             e.printStackTrace();
         }
     }
 
     /**
-     * <p>
      * Constructor for XmlStatement.
-     * </p>
      *
-     * @param tc    a {@link TestCase} object.
+     * @param tc a {@link TestCase} object.
      */
     public XmlStatement(TestCase tc) {
         super(tc, XmlStatement.EMPTY_XML_STRING);
@@ -68,13 +71,14 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public String getValue() {
-        String val = null;
+        String val;
         try {
             val = xmlMapper.writeValueAsString(this.xmlElement);
         } catch (JsonProcessingException e) {
+            val = this.value;
             e.printStackTrace();
         }
-        this.value = val; // TODO: not needed
+        this.value = val; // TODO: probably not needed
         return val;
     }
 
@@ -84,9 +88,9 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void setValue(String val) {
-        this.value = val; // TODO: not needed
         try {
-            this.xmlElement = this.xmlMapper.readValue(value, HashMap.class);
+            this.xmlElement = this.xmlMapper.readValue(val, HashMap.class);
+            this.value = val; // TODO: probably not needed
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -98,8 +102,8 @@ public class XmlStatement extends StringPrimitiveStatement {
     /** {@inheritDoc} */
     @Override
     public void zero() {
-        this.value = XmlStatement.EMPTY_XML_STRING; // TODO: not needed
         this.xmlElement = new HashMap<>();
+        this.value = XmlStatement.EMPTY_XML_STRING; // TODO: probably not needed
     }
 
     /* (non-Javadoc)
@@ -112,6 +116,7 @@ public class XmlStatement extends StringPrimitiveStatement {
 
         int current = 0;
 
+        // Try GRAMMAR_MUTATION_RETRY_LIMIT number of times when the new value is the same as the old
         while (this.xmlElement.equals(oldVal) && current < Properties.GRAMMAR_MUTATION_RETRY_LIMIT) {
             if (Randomness.nextDouble() <= Properties.RANDOM_PERTURBATION) {
                 randomize();
@@ -122,11 +127,10 @@ public class XmlStatement extends StringPrimitiveStatement {
         }
 
         try {
-            this.value = this.xmlMapper.writeValueAsString(this.xmlElement);
+            this.value = this.xmlMapper.writeValueAsString(this.xmlElement); // TODO: probably not needed
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
         return true;
     }
 
@@ -137,9 +141,11 @@ public class XmlStatement extends StringPrimitiveStatement {
     @Override
     public void randomize() {
         HashMap<String, Object> object = new HashMap<>();
+
+        // Add between zero and GRAMMAR_MAX_ELEMENTS number of elements randomly
         int max_entries = Randomness.nextInt(Properties.GRAMMAR_MAX_ELEMENTS);
         for (int i = 0; i <= max_entries; i++) {
-            this.addRandomElement(object);
+            XmlMutator.insertRandomElement(object);
         }
         this.xmlElement = object;
     }
@@ -154,17 +160,17 @@ public class XmlStatement extends StringPrimitiveStatement {
 
         // Delete
         if (Randomness.nextDouble() <= P) {
-            this.deleteRandomElement(this.xmlElement);
+            XmlMutator.deleteRandomElement(this.xmlElement);
         }
 
         // Change
         if (Randomness.nextDouble() <= P) {
-            this.changeRandomElement(this.xmlElement);
+            XmlMutator.changeRandomElement(this.xmlElement);
         }
 
         // Insert
         if (Randomness.nextDouble() <= P) {
-            this.addRandomElement(this.xmlElement);
+            XmlMutator.insertRandomElement(this.xmlElement);
         }
     }
 
@@ -175,184 +181,6 @@ public class XmlStatement extends StringPrimitiveStatement {
     @Override
     public void increment() {
         this.delta();;
-    }
-
-    private HashMap<String, Object> getCandidate(HashMap<String, Object> object) {
-        ArrayList<HashMap<String, Object>> candidates = new ArrayList<>();
-
-        if (object != null) {
-            for (String property : object.keySet()) {
-                Object element = object.get(property);
-                if (element instanceof HashMap) {
-                    HashMap<String, Object> map = (HashMap<String, Object>) element;
-                    candidates.add(map);
-                }
-            }
-            return Randomness.choice(candidates);
-        }
-        return null;
-    }
-
-    private Object getRandomPrimitive() {
-        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
-
-        double P = Randomness.nextDouble();
-        if (P <= 1d / 6d) {
-            return Randomness.nextBoolean();
-        } else if (P <= 2d / 6d) {
-            return constantPool.getRandomInt();
-        } else if (P <= 3d / 6d) {
-            return constantPool.getRandomLong();
-        } else if (P <= 4d / 6d) {
-            return constantPool.getRandomDouble();
-        } else if (P <= 5d / 6d) {
-            return constantPool.getRandomFloat();
-        } else {
-            return constantPool.getRandomString();
-        }
-        // TODO: Maybe add Null element
-    }
-
-    private void addRandomElement(HashMap<String, Object> object) {
-        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
-
-        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Add second layer elements
-            HashMap<String, Object> candidate = this.getCandidate(object);
-            if (candidate != null) {
-                candidate.put(constantPool.getRandomString(), this.getRandomPrimitive());
-                return;
-            }
-        }
-
-        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NULL) {
-            object.put(constantPool.getRandomString(), null);
-        } else if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_PRIMITIVE) {
-            object.put(constantPool.getRandomString(), this.getRandomPrimitive());
-        } else {
-            object.put(constantPool.getRandomString(), new HashMap<>());
-        }
-    }
-
-    private void deleteRandomElement(HashMap<String, Object> object) {
-        if (object.size() < 1)
-            return;
-
-        if (Randomness.nextDouble() <= Properties.GRAMMAR_JSON_NESTED) { // Delete second layer elements
-            HashMap<String, Object> candidate = this.getCandidate(object);
-            if (candidate != null) {
-                if (candidate.size() > 0) {
-                    Object candidate_property = Randomness.choice(candidate.keySet());
-                    candidate.remove(candidate_property);
-                }
-                return;
-            }
-        }
-
-        String property = Randomness.choice(object.keySet());
-        object.remove(property);
-    }
-
-    private String mutateString(String s) {
-        final double P = 1d / 3d;
-
-        // Delete
-        if (Randomness.nextDouble() <= P) {
-            double P1 = 1d / s.length();
-            for (int i = s.length(); i > 0; i--) {
-                if (Randomness.nextDouble() < P1) {
-                    s = removeCharAt(s, i - 1);
-                }
-            }
-        }
-
-        // Change
-        if (Randomness.nextDouble() <= P) {
-            double P1 = 1d / s.length();
-            for (int i = 0; i < s.length(); i++) {
-                if (Randomness.nextDouble() < P1) {
-                    s = replaceCharAt(s, i, Randomness.nextChar());
-                }
-            }
-        }
-
-        // Insert
-        if (Randomness.nextDouble() <= P) {
-            int pos = 0;
-            if (s.length() > 0)
-                pos = Randomness.nextInt(s.length());
-            s = StringInsert(s, pos);
-        }
-
-        return s;
-    }
-
-    private Object changeRandomPrimitiveElement(Object element) {
-        if (element instanceof Boolean) {
-            Boolean bool = (Boolean) element;
-            return !bool;
-        }
-
-        if (element instanceof Integer) {
-            Integer number = (Integer) element;
-            int delta = (int) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
-            return number + delta;
-        }
-
-        if (element instanceof Long) {
-            Long number = (Long) element;
-            long delta = (long) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
-            return number + delta;
-        }
-
-        if (element instanceof Double) {
-            Double number = (Double) element;
-            double delta = (double) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
-            return number + delta;
-        }
-
-        if (element instanceof Float){
-            Float number = (Float) element;
-            float delta = (float) Math.floor(Randomness.nextGaussian() * Properties.MAX_DELTA);
-            return number + delta;
-        }
-
-        if (element instanceof String) {
-            String s = (String) element;
-            return this.mutateString(s);
-        }
-
-        return element;
-    }
-
-    private void changeRandomElement(HashMap<String, Object> object) {
-        ConstantPool constantPool = ConstantPoolManager.getInstance().getConstantPool();
-
-        if (object.size() < 1)
-            return;
-
-        String property = Randomness.choice(object.keySet());
-        Object element = object.get(property);
-
-        double P = Randomness.nextDouble();
-        if (P <= Properties.GRAMMAR_JSON_PROPERTY) { // Change property name
-            object.remove(property);
-            String newProperty = this.mutateString(property);
-            object.put(newProperty, element);
-        } else { // Change property value
-            if (element == null) {
-                object.put(property, this.getRandomPrimitive());
-                // TODO: Maybe add array or object elements
-            } else if (element instanceof HashMap) {
-                HashMap<String, Object> object2 = (HashMap<String, Object>) element;
-                if (object2.size() > 0) {
-                    String property2 = Randomness.choice(object2.keySet());
-                    Object element2 = object2.get(property2);
-                    object.put(property, this.changeRandomPrimitiveElement(element2));
-                }
-            } else {
-                object.put(property, this.changeRandomPrimitiveElement(element));
-            }
-        }
     }
 
     /* (non-Javadoc)
@@ -382,7 +210,13 @@ public class XmlStatement extends StringPrimitiveStatement {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return new XmlStatement(newTestCase, this.value); // TODO: optimize using deep copy
+
+        // With GRAMMAR_JSON_INVALID chance return a StringPrimitiveStatement to allow for invalid mutations
+        if (Randomness.nextDouble() <= Properties.GRAMMAR_XML_INVALID) {
+            return new StringPrimitiveStatement(newTestCase, this.value);
+        } else {
+            return new XmlStatement(newTestCase, this.value); // TODO: optimize using deep copy
+        }
     }
 
     /* (non-Javadoc)
