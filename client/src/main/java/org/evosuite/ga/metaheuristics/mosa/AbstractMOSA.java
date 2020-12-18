@@ -352,11 +352,11 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 		this.generateInitialPopulation(Properties.POPULATION);
 
 		if (Properties.GRAMMAR_JSON) {
-			initializeJsonPopulation();
+			this.initializeJsonPopulation();
 		}
 
 		if (Properties.GRAMMAR_XML) {
-			initializeXmlPopulation();
+			this.initializeXmlPopulation();
 		}
 
 		// Determine fitness
@@ -371,7 +371,7 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 	 */
 	private void initializeJsonPopulation() {
 		Properties.GRAMMAR_JSON_INJECTION = true;
-		this.generateInitialPopulation(Properties.POPULATION);
+		this.generateRandomPopulation(Properties.POPULATION);
 		Properties.GRAMMAR_JSON_INJECTION = false;
 	}
 
@@ -382,7 +382,7 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 	 */
 	private void initializeXmlPopulation() {
 		Properties.GRAMMAR_XML_INJECTION = true;
-		this.generateInitialPopulation(Properties.POPULATION);
+		this.generateRandomPopulation(Properties.POPULATION);
 		Properties.GRAMMAR_XML_INJECTION = false;
 	}
 

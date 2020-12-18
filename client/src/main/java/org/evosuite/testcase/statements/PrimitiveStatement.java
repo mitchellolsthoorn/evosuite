@@ -151,10 +151,9 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
         } else if (clazz == byte.class) {
             statement = new BytePrimitiveStatement(tc);
         } else if (clazz.equals(String.class)) {
-            // TODO: extract in separate method
-            if (!clone && Properties.GRAMMAR_JSON && Properties.GRAMMAR_JSON_INJECTION) {
+            if (!clone && Properties.GRAMMAR_JSON && Properties.GRAMMAR_JSON_INJECTION && Randomness.nextBoolean()) {
                 statement = PrimitiveStatement.getJSONStatement(tc);
-            } else if (!clone && Properties.GRAMMAR_XML && Properties.GRAMMAR_XML_INJECTION) {
+            } else if (!clone && Properties.GRAMMAR_XML && Properties.GRAMMAR_XML_INJECTION && Randomness.nextBoolean()) {
                 statement = PrimitiveStatement.getXmlStatement(tc);
             } else {
                 statement = new StringPrimitiveStatement(tc);
@@ -220,7 +219,6 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
      * @return
      */
     private static PrimitiveStatement<?> getJSONStatement(TestCase tc) {
-        logger.debug("Using grammar JSON injection");
         PrimitiveStatement<?> statement = new JsonStatement(tc);
         statement.randomize();
         return statement;
@@ -232,7 +230,6 @@ public abstract class PrimitiveStatement<T> extends AbstractStatement {
      * @return
      */
     private static PrimitiveStatement<?> getXmlStatement(TestCase tc) {
-        logger.debug("Using grammar XML injection");
         PrimitiveStatement<?> statement = new XmlStatement(tc);
         statement.randomize();
         return statement;
