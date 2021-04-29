@@ -619,6 +619,9 @@ public class Properties {
 	@Parameter(key = "crossover_function", group = "Search Algorithm", description = "Crossover function during search")
 	public static CrossoverFunction CROSSOVER_FUNCTION = CrossoverFunction.SINGLEPOINTRELATIVE;
 
+	@Parameter(key = "special_crossover_function", group = "Search Algorithm", description = "Special crossover function during search")
+	public static boolean SPECIAL_CROSSOVER_FUNCTION = false;
+
 	public enum TheReplacementFunction {
 		/**
 		 * Indicates a replacement function which works for all chromosomes

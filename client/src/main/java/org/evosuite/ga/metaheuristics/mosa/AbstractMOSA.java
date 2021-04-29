@@ -29,6 +29,7 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.archive.Archive;
 import org.evosuite.ga.comparators.DominanceComparator;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
+import org.evosuite.ga.operators.crossover.*;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -69,6 +70,8 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 	/** Object used to keep track of the execution time needed to reach the maximum coverage */
 	protected final BudgetConsumptionMonitor budgetMonitor;
 
+	protected CrossOverFunction<TestChromosome> crossoverFunction = new HybridSinglePointCrossOver();
+
 	/**
 	 * Constructor.
 	 *
@@ -95,6 +98,11 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 					.warn("Originally, MOSA was implemented with a '"
 							+ SelectionFunction.RANK_CROWD_DISTANCE_TOURNAMENT.name()
 							+ "' selection function. You may want to consider using it.");
+		}
+
+		if (!Properties.SPECIAL_CROSSOVER_FUNCTION) {
+			logger.error("I am OFF");
+			this.crossoverFunction = new SinglePointCrossOver<>();
 		}
 	}
 
