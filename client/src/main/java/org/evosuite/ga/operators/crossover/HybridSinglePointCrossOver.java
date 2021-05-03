@@ -145,7 +145,7 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
     protected void storeMethodCompatibilityInformation(HashMap<String, List<MethodStatement>> map, MethodStatement statement) {
         String methodSignature = statement.getDeclaringClassName() + "|" + statement.toString();
         if (map.containsKey(methodSignature)) {
-            List<MethodStatement> list = map.get(statement.toString());
+            List<MethodStatement> list = map.get(methodSignature);
             list.add(statement);
         } else {
             List<MethodStatement> list = new ArrayList<>();
