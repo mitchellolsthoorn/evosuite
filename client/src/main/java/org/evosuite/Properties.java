@@ -619,8 +619,11 @@ public class Properties {
 	@Parameter(key = "crossover_function", group = "Search Algorithm", description = "Crossover function during search")
 	public static CrossoverFunction CROSSOVER_FUNCTION = CrossoverFunction.SINGLEPOINTRELATIVE;
 
-	@Parameter(key = "special_crossover_function", group = "Search Algorithm", description = "Special crossover function during search")
-	public static boolean SPECIAL_CROSSOVER_FUNCTION = false;
+	@Parameter(key = "multi_level_crossover", group = "Search Algorithm", description = "Multi-level crossover function during search")
+	public static boolean MULTI_LEVEL_CROSSOVER = false;
+
+	@Parameter(key = "data_crossover_prop", group = "Search Algorithm", description = "Multi-level crossover function during search")
+	public static double DATA_CROSSOVER_PROP = 0.5;
 
 	public enum TheReplacementFunction {
 		/**
