@@ -100,9 +100,11 @@ public abstract class AbstractMOSA extends GeneticAlgorithm<TestChromosome> {
 							+ "' selection function. You may want to consider using it.");
 		}
 
-		if (!Properties.SPECIAL_CROSSOVER_FUNCTION) {
-			logger.error("I am OFF");
+		if (!Properties.MULTI_LEVEL_CROSSOVER) {
+			logger.error("Standard Crossover");
 			this.crossoverFunction = new SinglePointCrossOver<>();
+		} else {
+			logger.error("Multi-level Crossover");
 		}
 	}
 
