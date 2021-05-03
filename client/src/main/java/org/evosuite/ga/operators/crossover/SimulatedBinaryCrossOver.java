@@ -14,9 +14,16 @@ public class SimulatedBinaryCrossOver {
     private final static double _contiguity = 2.5;
 
     public static void crossover(final NumericalPrimitiveStatement s1, final NumericalPrimitiveStatement s2) {
-        // TODO: Add Byte and Char
+        // TODO: Add and Char
         logger.debug("Old values: " + s1.getValue().toString() + " and " + s2.getValue().toString());
-        if (s1 instanceof DoublePrimitiveStatement && s2 instanceof DoublePrimitiveStatement) {
+        if (s1 instanceof BytePrimitiveStatement && s2 instanceof BytePrimitiveStatement) {
+            BytePrimitiveStatement d1 = (BytePrimitiveStatement) s1;
+            BytePrimitiveStatement d2 = (BytePrimitiveStatement) s2;
+            final double newValue1 = getNewValue(d1.getValue(), d2.getValue());
+            final double newValue2 = getNewValue(d2.getValue(), d1.getValue());
+            d1.setValue((byte) newValue1);
+            d2.setValue((byte) newValue2);
+        } else if (s1 instanceof DoublePrimitiveStatement && s2 instanceof DoublePrimitiveStatement) {
             DoublePrimitiveStatement d1 = (DoublePrimitiveStatement) s1;
             DoublePrimitiveStatement d2 = (DoublePrimitiveStatement) s2;
             final double newValue1 = getNewValue(d1.getValue(), d2.getValue());
@@ -74,9 +81,6 @@ public class SimulatedBinaryCrossOver {
                 ? ((v1 - v2) * 0.5) - beta * 0.5 * abs(v1 - v2)
                 : ((v1 - v2) * 0.5) + beta * 0.5 * abs(v1 - v2);
 
-        final double min = -1 * Properties.MAX_INT;
-        final double max = Properties.MAX_INT;
-
-        return Math.min(max, Math.max(v, min));
+        return v;
     }
 }

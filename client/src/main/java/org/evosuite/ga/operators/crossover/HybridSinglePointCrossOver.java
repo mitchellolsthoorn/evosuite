@@ -1,5 +1,6 @@
 package org.evosuite.ga.operators.crossover;
 
+import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ConstructionFailedException;
 import org.evosuite.testcase.TestCase;
@@ -33,7 +34,9 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
      */
     @Override
     public void crossOver(TestChromosome parent1, TestChromosome parent2) throws ConstructionFailedException {
-        if (Randomness.nextDouble() <= 0.5) {
+        this.structureCrossover.crossOver(parent1, parent2);
+
+        if (Randomness.nextDouble() <= Properties.DATA_CROSSOVER_PROP) {
             TestCase p1 = parent1.getTestCase();
             TestCase p2 = parent2.getTestCase();
 
@@ -74,34 +77,32 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
 //            logger.error(methodMatches2.toString());
 
             if (constructorMatches1.size() > 0 && constructorMatches2.size() > 0) {
-                String classifier = Randomness.choice(constructorMatches1.keySet());
+                for (String signature : constructorMatches1.keySet()){
+                    List<ConstructorStatement> l1 = constructorMatches1.get(signature);
+                    List<ConstructorStatement> l2 = constructorMatches2.get(signature);
 
-                List<ConstructorStatement> l1 = constructorMatches1.get(classifier);
-                List<ConstructorStatement> l2 = constructorMatches2.get(classifier);
+                    ConstructorStatement i1 = Randomness.choice(l1);
+                    ConstructorStatement i2 = Randomness.choice(l2);
 
-                ConstructorStatement i1 = Randomness.choice(l1);
-                ConstructorStatement i2 = Randomness.choice(l2);
-
-                assert i1 != null;
-                assert i2 != null;
-                crossoverGene(p1, p2, i1.getParameterReferences(), i2.getParameterReferences());
+                    assert i1 != null;
+                    assert i2 != null;
+                    crossoverGene(p1, p2, i1.getParameterReferences(), i2.getParameterReferences());
+                }
             }
 
             if (methodMatches1.size() > 0 && methodMatches2.size() > 0) {
-                String classifier = Randomness.choice(methodMatches1.keySet());
+                for (String signature : methodMatches1.keySet()) {
+                    List<MethodStatement> l1 = methodMatches1.get(signature);
+                    List<MethodStatement> l2 = methodMatches2.get(signature);
 
-                List<MethodStatement> l1 = methodMatches1.get(classifier);
-                List<MethodStatement> l2 = methodMatches2.get(classifier);
+                    MethodStatement i1 = Randomness.choice(l1);
+                    MethodStatement i2 = Randomness.choice(l2);
 
-                MethodStatement i1 = Randomness.choice(l1);
-                MethodStatement i2 = Randomness.choice(l2);
-
-                assert i1 != null;
-                assert i2 != null;
-                crossoverGene(p1, p2, i1.getParameterReferences(), i2.getParameterReferences());
+                    assert i1 != null;
+                    assert i2 != null;
+                    crossoverGene(p1, p2, i1.getParameterReferences(), i2.getParameterReferences());
+                }
             }
-        } else {
-            this.structureCrossover.crossOver(parent1, parent2);
         }
     }
 
@@ -110,31 +111,6 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
             logger.debug("Incompatible constructor");
             return false;
         }
-
-//        if (!s1.getDeclaringClassName().equals(s2.getDeclaringClassName())) {
-//            logger.debug("Incompatible constructor");
-//            return false;
-//        }
-//
-//        if (s1.getNumParameters() != s2.getNumParameters()) {
-//            logger.debug("Incompatible constructor");
-//            return false;
-//        }
-//
-//        if (!s1.getReturnType().equals(s2.getReturnType())) {
-//            logger.debug("Incompatible constructor");
-//            return false;
-//        }
-//
-//        List<VariableReference> s1List = s1.getParameterReferences();
-//        List<VariableReference> s2List = s2.getParameterReferences();
-//
-//        for (int i = 0; i < s1List.size(); i++) {
-//            if (!s1List.get(i).getType().getTypeName().equals(s2List.get(i).getType().getTypeName())) {
-//                logger.debug("Incompatible constructor");
-//                return false;
-//            }
-//        }
 
         logger.debug("Compatible constructor");
         return true;
@@ -150,31 +126,6 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
             logger.debug("Incompatible method");
             return false;
         }
-
-//        if (!s1.getMethodName().equals(s2.getMethodName())) {
-//            logger.debug("Incompatible method");
-//            return false;
-//        }
-//
-//        if (s1.getNumParameters() != s2.getNumParameters()) {
-//            logger.debug("Incompatible method");
-//            return false;
-//        }
-//
-//        if (!s1.getReturnType().equals(s2.getReturnType())) {
-//            logger.debug("Incompatible method");
-//            return false;
-//        }
-//
-//        List<VariableReference> s1List = s1.getParameterReferences();
-//        List<VariableReference> s2List = s2.getParameterReferences();
-//
-//        for (int i = 0; i < s1List.size(); i++) {
-//            if (!s1List.get(i).getType().equals(s2List.get(i).getType())) {
-//                logger.debug("Incompatible method");
-//                return false;
-//            }
-//        }
 
         logger.debug("Compatible method");
         return true;
@@ -192,13 +143,14 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
     }
 
     protected void storeMethodCompatibilityInformation(HashMap<String, List<MethodStatement>> map, MethodStatement statement) {
-        if (map.containsKey(statement.toString())) {
+        String methodSignature = statement.getDeclaringClassName() + "|" + statement.toString();
+        if (map.containsKey(methodSignature)) {
             List<MethodStatement> list = map.get(statement.toString());
             list.add(statement);
         } else {
             List<MethodStatement> list = new ArrayList<>();
             list.add(statement);
-            map.put(statement.toString(), list);
+            map.put(methodSignature, list);
         }
     }
 
@@ -237,6 +189,19 @@ public class HybridSinglePointCrossOver extends CrossOverFunction<TestChromosome
             s2.setValue(newValue2);
         } else {
             logger.debug("One of the string parameters is empty");
+            if (length1 == 0 && length2 > 0){
+                int position = Randomness.nextInt(length2);
+                String newValue1 = s2.getValue().substring(0, position);
+                String newValue2 =  s2.getValue().substring(position);
+                s1.setValue(newValue1);
+                s2.setValue(newValue2);
+            } else if (length1 > 0 && length2 == 0){
+                int position = Randomness.nextInt(length1);
+                String newValue1 = s1.getValue().substring(0, position);
+                String newValue2 =  s1.getValue().substring(position);
+                s1.setValue(newValue1);
+                s2.setValue(newValue2);
+            }
         }
 
         logger.debug("New values: " + s1.getValue() + " and " + s2.getValue());
